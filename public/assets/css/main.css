@@ -1,0 +1,87 @@
+:root {
+  --bg: #0b0b0c;
+  --card: #111214;
+  --text: #f3f4f6;
+  --muted: #9aa0a6;
+  --brand: #c4ff4d;
+}
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.container { width: min(1100px, 92vw); margin: 0 auto; }
+.link { color: var(--brand); text-decoration: none; }
+.btn { display: inline-block; padding: .8rem 1.2rem; border-radius: 999px; text-decoration: none; }
+.btn--primary { background: var(--brand); color: #0a0a0a; font-weight: 600; }
+
+.site-header { position: sticky; top: 0; background: rgba(11,11,12,.6); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,.06); }
+.nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem; }
+.nav__list { list-style: none; display: flex; gap: 1rem; margin: 0; padding: 0; }
+.nav__list a { color: var(--text); text-decoration: none; }
+
+.hero { position: relative; min-height: 70vh; display: grid; place-items: center; }
+.hero__media { position: absolute; inset: 0; background: radial-gradient(1200px 600px at 70% 30%, #1b1c20 0%, #0c0c0f 60%, #070708 100%); }
+.hero__overlay { position: relative; text-align: center; }
+
+.reading-wrap { padding: 18vh 0 22vh; }
+.subheading-badge { display: inline-block; border: 1px solid rgba(255,255,255,.15); border-radius: .5rem; padding: .25rem .6rem; color: var(--muted); margin-bottom: .75rem; }
+
+/* letters styling */
+reading-text split-lines::part(line) { display: inline-block; }
+reading-text split-lines::part(letter) {
+  display: inline-block;
+  color: var(--muted);
+  transition: color .08s linear, transform .08s ease;
+}
+reading-text split-lines::part(letter).on { color: var(--brand); }
+
+.teasers { display: grid; gap: 1rem; padding: 3rem 1rem; grid-template-columns: repeat(3, minmax(0,1fr)); }
+.teaser { background: var(--card); border: 1px solid rgba(255,255,255,.06); border-radius: 1rem; padding: 1.25rem; color: var(--text); }
+.site-footer { border-top: 1px solid rgba(255,255,255,.06); text-align: center; padding: 1rem; margin-top: 2rem; color: var(--muted); }
+
+/* Sticky “karaoke” section */
+.reading-section {
+  position: relative;
+  height: 400vh;
+}
+
+.reading-wrap {
+  position: sticky;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.reading-text-el {
+  display: inline-block;
+  max-width: 65ch;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  line-height: 1.7;
+  color: var(--muted);
+  letter-spacing: 0.015em;
+}
+
+.reading-spacer {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* Keep the animation behaviour */
+reading-text split-lines::part(letter) {
+  display: inline-block;
+  transition: color 0.15s ease-out, transform 0.15s ease-out;
+  transform: translateY(0.1em);
+}
+reading-text split-lines::part(letter).on {
+  color: var(--brand);
+  transform: translateY(0);
+}
