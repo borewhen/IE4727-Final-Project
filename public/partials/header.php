@@ -3,15 +3,14 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Decorum — Minimal Fashion</title>
+    <title>Stirling's</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <script defer src="assets/js/reading-text.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header" role="banner">
       <div class="container nav">
-        <a class="brand" href="index.php">Decorum</a>
+        <a class="brand" href="index.php">Stirling's</a>
         <nav id="primary-nav" class="nav__menu" role="navigation">
           <ul class="nav__list">
             <li><a href="products.php">Shop</a></li>

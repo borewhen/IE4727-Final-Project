@@ -6,8 +6,8 @@ require __DIR__ . '/partials/header.php';
   <section class="hero" aria-label="Hero">
     <div class="hero__media" aria-hidden="true"></div>
     <div class="hero__overlay">
-      <h1 class="hero__title">Fall / Winter Capsule</h1>
-      <p class="hero__subtitle">Minimal silhouettes. Everyday comfort.</p>
+      <h1 class="hero__title">Stirling's</h1>
+      <p class="hero__subtitle">Elegant silhouettes. Everyday comfort.</p>
       <a href="products.php" class="btn btn--primary">Shop the Collection</a>
     </div>
   </section>
@@ -18,13 +18,12 @@ require __DIR__ . '/partials/header.php';
     <reading-text reading-speed="1.5" text-start-opacity="0.25" class="reading-text-el">
       <div class="reading-text__inner">
         <div class="prose max-w-full">
-          <span class="subheading subheading-badge subheading-badge--with-icon subheading-badge--icon-square">
-            Play Dirty. Mind your Manners.
-          </span>
+          <!-- <span class="subheading subheading-badge subheading-badge--with-icon subheading-badge--icon-square">
+            Stirling's Collection
+          </span> -->
           <p class="h4">
             <split-lines preserve-letters class="is-split">
-              Dirty Manners exists in contrast—the space between urban and wild, structure and ease.
-              Every piece is made to move, designed to adapt, and built to roam.
+              The finest menswear for the modern gentleman, at the tip of your fingers.
             </split-lines>
           </p>
         </div>
