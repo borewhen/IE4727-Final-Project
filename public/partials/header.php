@@ -17,6 +17,8 @@
             <li><a href="about.php">About</a></li>
             <li><a href="contact.php">Contact</a></li>
             <li><a href="cart.php" class="nav__cart" aria-label="View cart">Cart</a></li>
+            <br>
+            <li><a href="login.php">Login</a></li>
           </ul>
         </nav>
       </div>
