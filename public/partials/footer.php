@@ -2,8 +2,8 @@
       <div class="container footer">
         <p class="muted">© <?php echo date('Y'); ?> Decorum. All rights reserved.</p>
         <ul class="footer__links">
-          <li><a href="privacy.php">Privacy</a></li>
-          <li><a href="terms.php">Terms</a></li>
+          <!-- <li><a href="privacy.php">Privacy</a></li>
+          <li><a href="terms.php">Terms</a></li> -->
         </ul>
       </div>
     </footer>

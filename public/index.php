@@ -3,13 +3,12 @@ require __DIR__ . '/partials/header.php';
 ?>
 <main id="main">
   <!-- Hero -->
-  <section class="hero" aria-label="Hero">
-    <div class="hero__media" aria-hidden="true"></div>
-    <div class="hero__overlay">
-      <h1 class="hero__title">Stirling's</h1>
-      <p class="hero__subtitle">Elegant silhouettes. Everyday comfort.</p>
-      <a href="products.php" class="btn btn--primary">Shop the Collection</a>
-    </div>
+  <section class="hero" aria-label="Hero" style="background: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)), url('assets/images/hero.jpg') center/cover no-repeat;">
+      <div class="hero__overlay">
+          <img src="assets/images/logo.svg" alt="Stirling's Logo" style="width: 30vw; height: auto; filter: invert(1);">
+          <p class="hero__subtitle">Elegant silhouettes. Everyday comfort.</p>
+          <a href="products.php" class="btn btn--primary">Shop the Collection</a>
+        </div>
   </section>
 
   <section class="reading-section">

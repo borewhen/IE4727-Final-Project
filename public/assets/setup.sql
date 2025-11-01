@@ -1,7 +1,7 @@
 -- db name is "stirling"
 
 SET FOREIGN_KEY_CHECKS=0;
-DROP TABLE IF EXISTS order_items, orders, cart_items, customers, products, categories;
+DROP TABLE IF EXISTS variation_sizes, variation_images, product_variations, order_items, orders, cart_items, customers, products, categories;
 SET FOREIGN_KEY_CHECKS=1;
 
 -- 1) Categories (e.g., Shirts, Pants, Shoes, Watches, Bags)
@@ -13,6 +13,14 @@ CREATE TABLE categories (
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Seed default categories
+INSERT IGNORE INTO categories (name, slug, description, is_active) VALUES
+ ('Shoes', 'shoes', '', 1),
+ ('Shirts', 'shirts', '', 1),
+ ('Pants', 'pants', '', 1),
+ ('Outerwear', 'outerwear', '', 1),
+ ('Accessories', 'accessories', '', 1);
 
 -- 2) Products (individual items like "Classic Oxford Shirt", "Leather Messenger Bag")
 CREATE TABLE products (
@@ -34,6 +42,38 @@ CREATE TABLE products (
   INDEX(category_id),
   INDEX(is_active),
   INDEX(is_featured)
+);
+
+-- 7) Product Variations (e.g., colour-level variant)
+CREATE TABLE product_variations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  colour VARCHAR(50),
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX(product_id),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE variation_images (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  variation_id INT NOT NULL,
+  image_filename VARCHAR(255) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX(variation_id),
+  FOREIGN KEY (variation_id) REFERENCES product_variations(id) ON DELETE CASCADE
+);
+
+-- 9) Variation Sizes (stock tracked per size under a variation)
+CREATE TABLE variation_sizes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  variation_id INT NOT NULL,
+  size VARCHAR(32) NOT NULL,
+  stock_quantity INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX(variation_id),
+  FOREIGN KEY (variation_id) REFERENCES product_variations(id) ON DELETE CASCADE
 );
 
 -- 3) Customers (registered users)
@@ -110,3 +150,21 @@ CREATE TABLE order_items (
   INDEX(order_id),
   INDEX(product_id)
 );
+
+INSERT INTO `products` (`id`, `category_id`, `name`, `slug`, `description`, `price`, `stock_quantity`, `brand`, `material`, `image_filename`, `is_active`, `is_featured`, `created_at`, `updated_at`) VALUES
+(2, 4, 'Stirling\'s Blazer', 'stirlings-blazer', 'Our signature look.', 529.00, 0, '0', 'Wool', 'assets/images/products/stirlings-blazer/main.jpg', 1, 0, '2025-11-02 06:48:13', '2025-11-02 06:48:13'),
+(3, 4, 'Miznon\'s Checkered Blazer', 'miznons-checkered-blazer', 'Take style up a level with the checkered patterns.', 659.00, 0, '0', '', 'assets/images/products/miznons-checkered-blazer/main.jpg', 1, 0, '2025-11-02 07:15:20', '2025-11-02 07:15:20');
+
+INSERT INTO `product_variations` (`id`, `product_id`, `colour`, `is_active`, `created_at`) VALUES
+(2, 2, 'Cream', 1, '2025-11-02 06:48:13'),
+(3, 3, 'Grey', 1, '2025-11-02 07:15:20');
+
+INSERT INTO `variation_images` (`id`, `variation_id`, `image_filename`, `sort_order`, `created_at`) VALUES
+(1, 2, 'assets/images/products/stirlings-blazer/2/img_69068e2ded3ef4.94023519.jpg', 0, '2025-11-02 06:48:13'),
+(2, 3, 'assets/images/products/miznons-checkered-blazer/3/img_69069488a42bd0.50304460.jpg', 0, '2025-11-02 07:15:20');
+
+INSERT INTO `variation_sizes` (`id`, `variation_id`, `size`, `stock_quantity`, `created_at`) VALUES
+(3, 2, '46', 2, '2025-11-02 06:48:13'),
+(4, 2, '48', 3, '2025-11-02 06:48:13'),
+(5, 3, '44', 5, '2025-11-02 07:15:20'),
+(6, 3, '46', 2, '2025-11-02 07:15:20');
