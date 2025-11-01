@@ -223,22 +223,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <form method="POST" action="register.php" id="registerForm" novalidate>
                 <!-- Role Toggle -->
-                <div class="form-group role-toggle-container">
-                    <label class="role-toggle-label">
-                        <span class="role-text">Register as:</span>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="roleToggle" name="user_role" value="admin">
-                            <span class="toggle-slider"></span>
-                            <span class="toggle-label-customer">Customer</span>
-                            <span class="toggle-label-admin">Admin</span>
-                        </div>
-                    </label>
-                </div>
+                <label class="role-toggle-label">
+                    <span class="role-text">Register as:</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="roleToggle" name="user_role" value="admin">
+                        <span class="toggle-label-customer">Customer</span>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label-admin">Admin</span>
+                    </div>
+                </label>
                 
-                <!-- Hidden input to store actual role value -->
+                <br>
+                
+                <!-- customer / admin toggle -->
                 <input type="hidden" id="user_role_input" name="user_role" value="customer">
-                
-                <!-- Admin PIN Field (Hidden by default) -->
                 <div class="form-group" id="adminPinGroup" style="display: none;">
                     <label for="admin_pin">Admin PIN <span class="required">*</span></label>
                     <input 
@@ -311,7 +309,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             name="email" 
                             class="<?php echo isset($field_errors['email']) ? 'error' : ''; ?>"
                             value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
-                            placeholder="john@example.com"
+                            placeholder="drwesley@ie4727.com"
                         >
                         <button type="button" id="sendOtpBtn" class="btn-otp">Send OTP</button>
                     </div>
@@ -369,13 +367,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <div class="form-group">
-                    <label for="shipping_address">Shipping Address <span class="required">*</span></label>
+                    <label for="shipping_address">Shipping Address<span class="required">*</span></label>
                     <textarea 
                         id="shipping_address" 
                         name="shipping_address" 
                         rows="3"
                         class="<?php echo isset($field_errors['shipping_address']) ? 'error' : ''; ?>"
-                        placeholder="123 Main Street, Apartment 4B"
+                        placeholder="50 Nanyang Avenue #47-27"
                     ><?php echo isset($_POST['shipping_address']) ? htmlspecialchars($_POST['shipping_address']) : ''; ?></textarea>
                     <?php if (isset($field_errors['shipping_address'])): ?>
                         <div class="field-error" data-server-error><?php echo htmlspecialchars($field_errors['shipping_address']); ?></div>
@@ -383,14 +381,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <div class="form-group">
-                    <label for="pincode">Pincode <span class="required">*</span></label>
+                    <label for="pincode">Postal Code<span class="required">*</span></label>
                     <input 
                         type="text" 
                         id="pincode" 
                         name="pincode" 
                         class="<?php echo isset($field_errors['pincode']) ? 'error' : ''; ?>"
                         value="<?php echo isset($_POST['pincode']) ? htmlspecialchars($_POST['pincode']) : ''; ?>"
-                        placeholder="123456"
+                        placeholder="639798"
                         maxlength="10"
                     >
                     <?php if (isset($field_errors['pincode'])): ?>

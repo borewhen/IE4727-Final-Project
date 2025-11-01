@@ -5,6 +5,7 @@ header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $entered_otp = trim($_POST['otp']);
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
     
     // Check if OTP exists in session
     if (!isset($_SESSION['otp']) || !isset($_SESSION['otp_time'])) {
@@ -21,6 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
+    // If email provided, ensure it matches the email used to request OTP
+    if ($email !== '' && isset($_SESSION['otp_email']) && $email !== $_SESSION['otp_email']) {
+        echo json_encode(['success' => false, 'message' => 'Email mismatch. Please request OTP again.']);
+        exit();
+    }
+
     // Verify OTP
     if ($entered_otp === $_SESSION['otp']) {
         $_SESSION['otp_verified'] = true;

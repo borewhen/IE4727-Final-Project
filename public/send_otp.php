@@ -42,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['otp_email'] = $email;
     $_SESSION['otp_time'] = time();
     
-    // Send OTP via email
-    if (sendOTP($email, $otp)) {
+    // Send OTP only to local dev recipient, regardless of entered email
+    if (sendOTP(DEV_OTP_RECIPIENT, $otp)) {
         echo json_encode(['success' => true, 'message' => 'OTP sent to your email']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to send OTP. Please try again.']);

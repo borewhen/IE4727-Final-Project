@@ -2,155 +2,119 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'PHPMailer/src/Exception.php';
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
+// Detect PHPMailer availability (optional in local dev)
+// Prefer non-public libs path; fallback to public path if present
+$__mailerBaseLibs  = realpath(__DIR__ . '/../libs/PHPMailer/src/PHPMailer.php');
+$__mailerBasePublic = realpath(__DIR__ . '/PHPMailer/src/PHPMailer.php');
+$__mailerPath = $__mailerBaseLibs ?: $__mailerBasePublic;
+$__hasMailer = $__mailerPath && file_exists($__mailerPath);
+if ($__hasMailer) {
+    $baseDir = dirname($__mailerPath);
+    require $baseDir . '/Exception.php';
+    require $baseDir . '/PHPMailer.php';
+    require $baseDir . '/SMTP.php';
+}
 
-// Gmail Configuration
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'shirshosinha9@gmail.com');           // ← UPDATE THIS
-define('SMTP_PASSWORD', 'iuau hiat hqwb tpnu');              // ← UPDATE THIS
-define('SMTP_FROM_EMAIL', 'shirshosinha9@gmail.com');         // ← UPDATE THIS
-define('SMTP_FROM_NAME', 'Stirling Store');
+define('SMTP_HOST', '127.0.0.1');
+define('SMTP_PORT', 1025);
+define('SMTP_FROM_EMAIL', 'no-reply@stirlings.com');
+define('SMTP_FROM_NAME', "Stirling's");
+define('DEV_OTP_RECIPIENT', 'bshen002@e.ntu.edu.sg');
+define('DEV_MODE', false);
 
 function sendEmail($to, $subject, $body) {
-    $mail = new PHPMailer(true);
-    
-    try {
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host       = SMTP_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = SMTP_USERNAME;
-        $mail->Password   = SMTP_PASSWORD;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = SMTP_PORT;
-        
-        // Disable SSL certificate verification (for XAMPP/localhost)
-        $mail->SMTPOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            )
-        );
-        
-        // Recipients
-        $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
-        $mail->addAddress($to);
-        
-        // Content
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $body;
-        
-        $mail->send();
-        return true;
-    } catch (Exception $e) {
-        error_log("Email Error: {$mail->ErrorInfo}");
-        return false;
+    global $__hasMailer;
+
+    // Prefer PHPMailer if available
+    if ($__hasMailer) {
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST;
+            $mail->Port       = SMTP_PORT;
+            $mail->SMTPAuth   = false;
+            $mail->SMTPSecure = '';
+            // For Mailpit: keep plain SMTP and avoid auto STARTTLS
+            $mail->SMTPAutoTLS = false;
+            // Enable debug output to PHP error log for troubleshooting
+            $mail->SMTPDebug = 2; // set to 0 to silence after confirming
+            $mail->Debugoutput = function($str, $level) {
+                error_log("SMTP debug (level {$level}): " . $str);
+            };
+
+            $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+            $mail->addAddress($to);
+
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $body;
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Email Error: {$mail->ErrorInfo}");
+            // fall through to dev fallback below
+        }
     }
+
+    // Dev fallback: log the email locally and report success so flows continue
+    if (DEV_MODE) {
+        $logDir = __DIR__ . '/assets';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0777, true);
+        }
+        $logFile = $logDir . '/otp_dev.log';
+        $log = "[" . date('Y-m-d H:i:s') . "] TO: {$to}\nSUBJECT: {$subject}\nBODY:\n{$body}\n\n";
+        @file_put_contents($logFile, $log, FILE_APPEND);
+        return true;
+    }
+
+    return false;
 }
 
 function sendOTP($email, $otp) {
-    $subject = "Your OTP for Registration - Stirling Store";
-    $body = "
-    <html>
-    <head>
-        <style>
-            body { 
-                font-family: Arial, sans-serif; 
-                margin: 0;
-                padding: 0;
-                background-color: #f4f4f4;
-            }
-            .container { 
-                max-width: 600px; 
-                margin: 20px auto; 
-                background: #ffffff;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-            .header { 
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                color: white; 
-                padding: 30px 20px; 
-                text-align: center; 
-            }
-            .header h1 {
-                margin: 0;
-                font-size: 28px;
-            }
-            .content { 
-                padding: 40px 30px; 
-            }
-            .content h2 {
-                color: #333;
-                margin-top: 0;
-            }
-            .otp-box { 
-                background: #f5f5f5; 
-                padding: 25px; 
-                border-radius: 8px; 
-                text-align: center; 
-                margin: 30px 0; 
-                border: 2px dashed #667eea; 
-            }
-            .otp-code { 
-                font-size: 42px; 
-                font-weight: bold; 
-                color: #667eea; 
-                letter-spacing: 10px;
-                font-family: 'Courier New', monospace;
-            }
-            .info-box {
-                background: #fff3cd;
-                border-left: 4px solid #ffc107;
-                padding: 15px;
-                margin: 20px 0;
-            }
-            .footer { 
-                text-align: center; 
-                padding: 20px;
-                background: #f8f9fa;
-                color: #666; 
-                font-size: 12px; 
-            }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <h1>🎩 Stirling Store</h1>
-                <p style='margin: 5px 0 0 0;'>Email Verification</p>
-            </div>
-            <div class='content'>
-                <h2>Welcome!</h2>
-                <p>Thank you for registering with Stirling Store!</p>
-                <p>To complete your registration, please use the following One-Time Password (OTP):</p>
-                
-                <div class='otp-box'>
-                    <div class='otp-code'>{$otp}</div>
-                </div>
-                
-                <div class='info-box'>
-                    <strong>⚠️ Important:</strong> This OTP is valid for <strong>10 minutes</strong> only.
-                </div>
-                
-                <p>Enter this code on the registration page to verify your email address.</p>
-                <p>If you didn't request this registration, please ignore this email.</p>
-            </div>
-            <div class='footer'>
-                <p>&copy; 2024 Menswear Store. All rights reserved.</p>
-                <p>This is an automated email, please do not reply.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    ";
-    
+    $subject = "Stirling's - Email Verification";
+    $body = <<<HTML
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <style>
+    body { margin:0; padding:0; background:#eeeeee; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#222222; }
+    .container { max-width:600px; margin:24px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.08); }
+    .header { background:#7A553D; color:#ffffff; padding:24px 20px; text-align:center; }
+    .brand { margin:0; font-size:24px; font-weight:700; letter-spacing:.2px; }
+    .sub { margin:6px 0 0; opacity:.9; }
+    .content { padding:32px 28px; }
+    .h2 { margin:0 0 8px 0; font-size:20px; }
+    .muted { color:#7e5d3f; margin:0 0 16px 0; }
+    .otp-box { background:#f7f2ec; padding:24px; text-align:center; border-radius:10px; margin:24px 0; }
+    .otp { font-size:32px; font-weight:800; color:#FA6000; letter-spacing:10px;}
+    .notice { border: 1px solid #7a553d; border-left:4px solid #7a553d; padding:12px 14px; margin:18px 0; border-radius:6px; color:#7a553d; }
+    .footer { background:#f8f9fa; color:#7e5d3f; text-align:center; font-size:12px; padding:16px; }
+  </style>
+  <title>Stirling OTP</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+      <img src="http://localhost/IE4727-Final-Project/public/assets/images/logo.svg" alt="Stirling's Logo" width="140" style="display:block;margin:0 auto;filter:brightness(0) invert(1);">
+        <div class="sub">Email Verification</div>
+      </div>
+      <div class="content">
+        <h2 class="h2">Welcome!</h2>
+        <p class="muted">Use the verification code below to verify your email.</p>
+        <div class="otp-box"><div class="otp">{$otp}</div></div>
+        <div class="notice"><em>This OTP is only valid for <strong>10 minutes</strong>.</em></div>
+        <p class="muted">If you didn&apos;t request this, you can safely ignore this email.</p>
+      </div>
+      <div class="footer">&copy; 2025 Stirling&apos;s, Shen Bowen &amp; Shirsho Sinha.</div>
+    </div>
+  </body>
+</html>
+HTML;
+
     return sendEmail($email, $subject, $body);
 }
 ?>

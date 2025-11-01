@@ -1,3 +1,7 @@
+<?php
+// Ensure session/config available for nav state
+require_once __DIR__ . '/../config.php';
+?>
 <!doctype html>
 <html lang="en">
   <head>
@@ -10,15 +14,19 @@
   <body>
     <header class="site-header" role="banner">
       <div class="container nav">
-        <a class="brand" href="index.php">Stirling's</a>
+        <a class="logo" href="index.php"><img src="assets/images/logo.svg" alt="Stirling's Logo" style="width: 80px; height: 80px;"></a>
         <nav id="primary-nav" class="nav__menu" role="navigation">
           <ul class="nav__list">
             <li><a href="products.php">Shop</a></li>
             <li><a href="about.php">About</a></li>
-            <li><a href="contact.php">Contact</a></li>
+            <li><a href="about.php#contact">Contact</a></li>
             <li><a href="cart.php" class="nav__cart" aria-label="View cart">Cart</a></li>
             <br>
+            <?php if (isset($_SESSION['customer_id'])): ?>
+            <li><a href="profile.php">Profile</a></li>
+            <?php else: ?>
             <li><a href="login.php">Login</a></li>
+            <?php endif; ?>
           </ul>
         </nav>
       </div>

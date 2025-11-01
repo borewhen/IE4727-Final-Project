@@ -104,12 +104,12 @@
         <h1>📧 OTP Email Test</h1>
         
         <div class="instructions">
-            <h3>⚠️ Before Testing:</h3>
+            <h3>⚠️ Local Email via Mailpit</h3>
             <ol>
-                <li>Make sure you've updated <code>email_config.php</code> with your Gmail credentials</li>
-                <li>Ensure 2-Factor Authentication is enabled on your Gmail account</li>
-                <li>Use an App Password (not your regular Gmail password)</li>
-                <li>Check your spam folder if email doesn't arrive in inbox</li>
+                <li>Install Mailpit: <code>brew install mailpit</code></li>
+                <li>Start Mailpit: <code>brew services start mailpit</code></li>
+                <li>Open the inbox UI: <code>http://localhost:8025</code></li>
+                <li>Our app sends via SMTP <code>127.0.0.1:1025</code> (no auth)</li>
             </ol>
         </div>
 
@@ -139,14 +139,10 @@
             if ($result) {
                 echo "<div class='result success'>";
                 echo "<h3>✅ Success!</h3>";
-                echo "<p>Email sent successfully!</p>";
-                echo "<p><strong>Next steps:</strong></p>";
-                echo "<ul>";
-                echo "<li>Check your email inbox: <strong>" . htmlspecialchars($test_email) . "</strong></li>";
-                echo "<li>If not in inbox, check your <strong>Spam/Junk</strong> folder</li>";
-                echo "<li>Look for email from: <strong>" . SMTP_FROM_EMAIL . "</strong></li>";
-                echo "<li>The OTP in the email should be: <strong>{$test_otp}</strong></li>";
-                echo "</ul>";
+                echo "<p>Email captured by Mailpit.</p>";
+                echo "<p><strong>View it at:</strong> <a href='http://localhost:8025' target='_blank' rel='noopener'>http://localhost:8025</a></p>";
+                echo "<p><strong>From:</strong> " . SMTP_FROM_EMAIL . "</p>";
+                echo "<p><strong>OTP:</strong> {$test_otp}</p>";
                 echo "</div>";
             } else {
                 echo "<div class='result error'>";

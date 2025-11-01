@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const adminPinInput = document.getElementById('admin_pin');
     
     let otpVerified = false;
+    // Centralize enabling/disabling submit button
+    function updateSubmitState() {
+        submitBtn.disabled = !otpVerified;
+    }
+
     let otpSent = false;
     let verifiedEmail = '';
     let isAdminRole = false;
@@ -81,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (otpSent) {
             otpVerified = false;
             otpSent = false;
-            submitBtn.disabled = true;
+            updateSubmitState();
             otpFieldGroup.style.display = 'none';
             sendOtpBtn.textContent = 'Send OTP';
             sendOtpBtn.disabled = false;
@@ -161,14 +166,14 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: 'otp=' + encodeURIComponent(otp)
+            body: 'otp=' + encodeURIComponent(otp) + '&email=' + encodeURIComponent(currentEmail)
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 showMessage(otpVerifyMessage, data.message + ' ✓', 'success');
                 otpVerified = true;
-                submitBtn.disabled = false;
+                updateSubmitState();
                 verifyOtpBtn.disabled = true;
                 verifyOtpBtn.textContent = 'Verified ✓';
                 verifyOtpBtn.style.background = '#28a745';
@@ -184,6 +189,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showMessage(otpVerifyMessage, data.message, 'error');
                 verifyOtpBtn.disabled = false;
                 verifyOtpBtn.textContent = 'Verify';
+                otpVerified = false;
+                updateSubmitState();
             }
         })
         .catch(error => {
@@ -191,6 +198,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showMessage(otpVerifyMessage, 'Error verifying OTP. Please try again.', 'error');
             verifyOtpBtn.disabled = false;
             verifyOtpBtn.textContent = 'Verify';
+            otpVerified = false;
+            updateSubmitState();
         });
     });
     
