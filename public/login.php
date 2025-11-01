@@ -81,19 +81,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Menswear Store</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
+<?php require __DIR__ . '/partials/header.php'; ?>
+<main id="main">
     <div class="login-container">
         <div class="login-box">
             <h1>Welcome Back</h1>
-            <p class="subtitle">Login to your account</p>
+            <p class="subtitle" style="text-align: left;">Log in to your account</p>
             
             <?php if (!empty($registration_success)): ?>
                 <div class="success-message">
@@ -144,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-    
-    <script src="js/validation.js"></script>
-</body>
-</html>
+</main>
+
+<script src="js/validation.js"></script>
+<?php require __DIR__ . '/partials/footer.php'; ?>

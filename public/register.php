@@ -197,19 +197,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Menswear Store</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
+<?php require __DIR__ . '/partials/header.php'; ?>
+<main id="main">
     <div class="login-container">
         <div class="login-box register-box">
             <h1>Create Account</h1>
-            <p class="subtitle">Register for a new account</p>
+            <p class="subtitle" style="text-align: left;">Register for a new account</p>
             
             <?php if (!empty($error_message)): ?>
                 <div class="error-message">
@@ -444,7 +437,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-    
-    <script src="js/register_validation.js"></script>
-</body>
-</html>
+</main>
+
+<script src="js/register_validation.js"></script>
+<?php require __DIR__ . '/partials/footer.php'; ?>
