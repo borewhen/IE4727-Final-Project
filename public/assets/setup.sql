@@ -180,3 +180,67 @@ INSERT INTO `variation_sizes` (`id`, `variation_id`, `size`, `stock_quantity`, `
 (4, 2, '48', 3, '2025-11-02 06:48:13'),
 (5, 3, '44', 5, '2025-11-02 07:15:20'),
 (6, 3, '46', 2, '2025-11-02 07:15:20');
+
+-- 11) Returns Table (Main return request data)
+CREATE TABLE returns (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  customer_id INT NOT NULL,
+  return_number VARCHAR(50) NOT NULL UNIQUE,
+  
+  -- Return status lifecycle
+  return_status ENUM('pending', 'approved', 'rejected', 'items_received', 'completed', 'refunded') 
+    NOT NULL DEFAULT 'pending',
+  
+  -- Return details
+  return_reason VARCHAR(50) NOT NULL,
+  return_details TEXT NOT NULL,
+  refund_method VARCHAR(50) NOT NULL,
+  return_total DECIMAL(10,2) NOT NULL,
+  
+  -- Context at time of return
+  order_status_at_request VARCHAR(50),
+  payment_status_at_request VARCHAR(50),
+  
+  -- Timestamps
+  requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  approved_at DATETIME,
+  rejected_at DATETIME,
+  items_received_at DATETIME,
+  completed_at DATETIME,
+  refunded_at DATETIME,
+  
+  -- Admin fields
+  rejection_reason TEXT,
+  admin_notes TEXT,
+  return_shipping_tracking VARCHAR(100),
+  
+  -- Foreign keys
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+  
+  -- Indexes for performance
+  INDEX(order_id),
+  INDEX(customer_id),
+  INDEX(return_number),
+  INDEX(return_status),
+  INDEX(requested_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 12) Return Items Table (Which specific items are being returned)
+CREATE TABLE return_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  return_id INT NOT NULL,
+  order_item_id INT NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  
+  -- Item condition when returned
+  item_condition VARCHAR(50) DEFAULT 'pending_inspection',
+  condition_notes TEXT,
+  
+  FOREIGN KEY (return_id) REFERENCES returns(id) ON DELETE CASCADE,
+  FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
+  
+  INDEX(return_id),
+  INDEX(order_item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

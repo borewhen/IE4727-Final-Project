@@ -8,20 +8,47 @@ if (!isset($_SESSION['customer_id'])) {
 
 $customerId = (int)$_SESSION['customer_id'];
 $customerName = isset($_SESSION['customer_name']) ? $_SESSION['customer_name'] : '';
-// Robust admin check: TINYINT(1) 0/1 stored as string or int
 $isAdmin = !empty($_SESSION['is_admin']) && (int)$_SESSION['is_admin'] == 1;
 
 // Fetch recent orders for this customer
 $orders = [];
 $conn = getDBConnection();
-$stmt = $conn->prepare('SELECT id, order_number, order_total, order_status, created_at FROM orders WHERE customer_id = ? ORDER BY created_at DESC');
+$stmt = $conn->prepare('
+    SELECT id, order_number, order_total, order_status, payment_status, created_at 
+    FROM orders 
+    WHERE customer_id = ? 
+    ORDER BY created_at DESC
+');
 $stmt->bind_param('i', $customerId);
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result) {
-    while ($row = $result->fetch_assoc()) { $orders[] = $row; }
+    while ($row = $result->fetch_assoc()) { 
+        $orders[] = $row; 
+    }
 }
 $stmt->close();
+
+// Check which orders have returns
+$order_returns = [];
+if (!empty($orders)) {
+    $order_ids = array_column($orders, 'id');
+    $placeholders = implode(',', array_fill(0, count($order_ids), '?'));
+    $stmt = $conn->prepare("
+        SELECT order_id, return_status, return_number 
+        FROM returns 
+        WHERE order_id IN ($placeholders)
+    ");
+    $types = str_repeat('i', count($order_ids));
+    $stmt->bind_param($types, ...$order_ids);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $order_returns[$row['order_id']] = $row;
+    }
+    $stmt->close();
+}
+
 $conn->close();
 
 require __DIR__ . '/partials/header.php';
@@ -59,22 +86,50 @@ require __DIR__ . '/partials/header.php';
               <th style="text-align:left; padding:.75rem; border-bottom:1px solid #e5e7eb;">Status</th>
               <th style="text-align:right; padding:.75rem; border-bottom:1px solid #e5e7eb;">Total</th>
               <th style="text-align:left; padding:.75rem; border-bottom:1px solid #e5e7eb;">Date</th>
+              <th style="text-align:center; padding:.75rem; border-bottom:1px solid #e5e7eb;">Actions</th>
             </tr>
           </thead>
           <tbody>
           <?php foreach ($orders as $o): ?>
+            <?php 
+              $hasReturn = isset($order_returns[$o['id']]);
+              $returnData = $hasReturn ? $order_returns[$o['id']] : null;
+            ?>
             <tr>
               <td style="padding:.75rem; border-bottom:1px solid #f0f0f0;">
                 <?php echo htmlspecialchars($o['order_number']); ?>
               </td>
               <td style="padding:.75rem; border-bottom:1px solid #f0f0f0;">
-                <?php echo htmlspecialchars($o['order_status']); ?>
+                <span class="order-status-badge order-status-<?php echo $o['order_status']; ?>">
+                  <?php echo ucfirst($o['order_status']); ?>
+                </span>
               </td>
               <td style="padding:.75rem; border-bottom:1px solid #f0f0f0; text-align:right;">
                 $<?php echo number_format((float)$o['order_total'], 2); ?>
               </td>
               <td style="padding:.75rem; border-bottom:1px solid #f0f0f0;">
-                <?php echo htmlspecialchars($o['created_at']); ?>
+                <?php echo date('M d, Y', strtotime($o['created_at'])); ?>
+              </td>
+              <td style="padding:.75rem; border-bottom:1px solid #f0f0f0; text-align:center;">
+                <?php if ($hasReturn): ?>
+                  <!-- Return already exists -->
+                  <a href="return-status.php?return=<?php echo urlencode($returnData['return_number']); ?>" class="btn-view-return">
+                    View Return
+                  </a>
+                  <div style="margin-top:.25rem;">
+                    <span class="return-status-badge return-status-<?php echo $returnData['return_status']; ?>">
+                      <?php echo ucfirst(str_replace('_', ' ', $returnData['return_status'])); ?>
+                    </span>
+                  </div>
+                <?php elseif ($o['order_status'] !== 'cancelled'): ?>
+                  <!-- Can request return -->
+                  <a href="return-request.php?order=<?php echo urlencode($o['order_number']); ?>" class="btn-return">
+                    Request Return
+                  </a>
+                <?php else: ?>
+                  <!-- Cancelled order -->
+                  <span style="color: #999; font-size: .85rem;">-</span>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -86,5 +141,3 @@ require __DIR__ . '/partials/header.php';
 </main>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>
-
-
