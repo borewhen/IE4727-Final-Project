@@ -162,7 +162,7 @@ reading-text split-lines::part(letter) {
 }
 
 reading-text split-lines::part(letter).on {
-  color: var(--orange-bright);
+  color: var(--brown-3);
 }
 
 .teasers {
@@ -229,7 +229,7 @@ reading-text split-lines::part(letter) {
 }
 
 reading-text split-lines::part(letter).on {
-  color: var(--orange-bright);
+  color: var(--brown-3);
   transform: translateY(0);
 }
 
@@ -369,8 +369,6 @@ reading-text split-lines::part(letter).on {
   .product { grid-template-columns: 1fr; }
 }
 
-.product__gallery {}
-
 .product-media {
   background: var(--card);
   border-radius: 1rem;
@@ -417,8 +415,6 @@ reading-text split-lines::part(letter).on {
   display: block;
   border-radius: inherit;
 }
-
-.product__info {}
 
 .product__title {
   margin: 0 0 .5rem 0;

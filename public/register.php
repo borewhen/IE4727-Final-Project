@@ -437,5 +437,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </main>
 
-<script src="js/register_validation.js"></script>
+<script src="assets/js/register_validation.js"></script>
 <?php require __DIR__ . '/partials/footer.php'; ?>

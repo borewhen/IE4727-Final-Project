@@ -11,15 +11,12 @@ require __DIR__ . '/partials/header.php';
         </div>
   </section>
 
-  <section class="reading-section">
-  <div class="reading-spacer"></div> <!-- preserves scroll space -->
-  <div class="reading-wrap">
+  <section class="reading-section" style="background: linear-gradient(rgba(80,63,53,0.8), rgba(80,63,53,0.8)), url('assets/images/hero2.jpg') center/cover no-repeat;">
+  <div class="reading-spacer"></div> <!-- this preserves scroll space! -->
+  <div class="reading-wrap" style="color:#ffffff;">
     <reading-text reading-speed="1.5" text-start-opacity="0.25" class="reading-text-el">
       <div class="reading-text__inner">
         <div class="prose max-w-full">
-          <!-- <span class="subheading subheading-badge subheading-badge--with-icon subheading-badge--icon-square">
-            Stirling's Collection
-          </span> -->
           <p class="h4">
             <split-lines preserve-letters class="is-split">
               The finest menswear for the modern gentleman, at the tip of your fingers.

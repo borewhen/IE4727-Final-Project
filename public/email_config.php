@@ -117,4 +117,87 @@ HTML;
 
     return sendEmail($email, $subject, $body);
 }
+
+// Send Order Confirmation with 2-minute editable window
+function sendOrderConfirmationEmail($orderId) {
+    require_once __DIR__ . '/config.php';
+
+    $conn = getDBConnection();
+    // Load order + items
+    $stmt = $conn->prepare("SELECT o.id, o.order_number, o.customer_email, o.customer_name, o.order_total, o.created_at FROM orders o WHERE o.id = ? LIMIT 1");
+    $stmt->bind_param('i', $orderId);
+    $stmt->execute();
+    $order = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if (!$order) { $conn->close(); return false; }
+
+    $itemsStmt = $conn->prepare("SELECT product_name, quantity, unit_price, line_total FROM order_items WHERE order_id = ?");
+    $itemsStmt->bind_param('i', $orderId);
+    $itemsStmt->execute();
+    $items = $itemsStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $itemsStmt->close();
+
+    // Create short-lived token (2 minutes)
+    $token = bin2hex(random_bytes(16));
+    $expiresAt = date('Y-m-d H:i:s', time() + 120);
+    $tok = $conn->prepare("INSERT INTO order_edit_tokens (order_id, token, expires_at) VALUES (?, ?, ?)");
+    $tok->bind_param('iss', $orderId, $token, $expiresAt);
+    $tok->execute();
+    $tok->close();
+    $conn->close();
+
+    // Build email body with review link
+    $baseUrl = 'http://localhost/IE4727-Final-Project/public/';
+    $reviewUrl = $baseUrl . 'order_review.php?token=' . urlencode($token);
+    $cancelUrl = $reviewUrl . '&action=cancel';
+
+    $itemsRows = '';
+    foreach ($items as $it) {
+        $itemsRows .= '<tr><td style="padding:6px 8px; border-bottom:1px solid #eee;">' . htmlspecialchars($it['product_name']) . '</td>';
+        $itemsRows .= '<td style="padding:6px 8px; text-align:center; border-bottom:1px solid #eee;">' . (int)$it['quantity'] . '</td>';
+        $itemsRows .= '<td style="padding:6px 8px; text-align:right; border-bottom:1px solid #eee;">$' . number_format((float)$it['line_total'], 2) . '</td></tr>';
+    }
+
+    $subject = "Your Order " . $order['order_number'] . " is Confirmed";
+    $body = <<<HTML
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Order Confirmation</title></head>
+<body style="background:#f5f5f5; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;">
+  <div style="max-width:680px; margin:24px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.06)">
+    <div style="background:#7A553D; color:#fff; padding:22px 20px;">
+      <div style="font-size:20px; font-weight:700;">Order Confirmed</div>
+      <div style="opacity:.9;">Order #{$order['order_number']}</div>
+    </div>
+    <div style="padding:24px 22px; color:#222;">
+      <p>Hi {$order['customer_name']},</p>
+      <p>Thanks for your purchase. Your order has been received.</p>
+      <table style="width:100%; border-collapse:collapse; margin:12px 0;">
+        <thead>
+          <tr><th style="text-align:left; padding:6px 8px; border-bottom:2px solid #ddd;">Item</th>
+              <th style="text-align:center; padding:6px 8px; border-bottom:2px solid #ddd;">Qty</th>
+              <th style="text-align:right; padding:6px 8px; border-bottom:2px solid #ddd;">Total</th></tr>
+        </thead>
+        <tbody>{$itemsRows}</tbody>
+        <tfoot>
+          <tr><td></td><td style="text-align:right; padding:8px;"><strong>Order Total</strong></td><td style="text-align:right; padding:8px;"><strong>
+          $${number_format((float)$order['order_total'], 2)}
+          </strong></td></tr>
+        </tfoot>
+      </table>
+      <div style="margin:18px 0; padding:12px; background:#fff8e1; border-left:4px solid #ffc107; border-radius:6px;">
+        You can review or change your order for the next <strong>2 minutes</strong>.
+      </div>
+      <p>
+        <a href="{$reviewUrl}" style="display:inline-block; background:#7A553D; color:#fff; padding:10px 16px; border-radius:8px; text-decoration:none;">Review / Edit Order</a>
+        <a href="{$cancelUrl}" style="display:inline-block; margin-left:10px; background:#b3261e; color:#fff; padding:10px 16px; border-radius:8px; text-decoration:none;">Cancel Order</a>
+      </p>
+      <p style="color:#666; font-size:12px;">Links expire at {$expiresAt}.</p>
+    </div>
+    <div style="background:#f8f9fa; color:#7e5d3f; text-align:center; font-size:12px; padding:14px;">© Stirling's</div>
+  </div>
+</body></html>
+HTML;
+
+    return sendEmail($order['customer_email'], $subject, $body);
+}
 ?>

@@ -1,7 +1,7 @@
 -- db name is "stirling"
 
 SET FOREIGN_KEY_CHECKS=0;
-DROP TABLE IF EXISTS variation_sizes, variation_images, product_variations, order_items, orders, cart_items, customers, products, categories;
+DROP TABLE IF EXISTS order_edit_tokens, variation_sizes, variation_images, product_variations, order_items, orders, cart_items, customers, products, categories;
 SET FOREIGN_KEY_CHECKS=1;
 
 -- 1) Categories (e.g., Shirts, Pants, Shoes, Watches, Bags)
@@ -74,6 +74,18 @@ CREATE TABLE variation_sizes (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX(variation_id),
   FOREIGN KEY (variation_id) REFERENCES product_variations(id) ON DELETE CASCADE
+);
+
+-- 10) Order Edit Tokens (time-limited edit links)
+CREATE TABLE order_edit_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  token VARCHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX(order_id),
+  INDEX(expires_at),
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 );
 
 -- 3) Customers (registered users)
