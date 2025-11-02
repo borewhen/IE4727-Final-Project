@@ -61,6 +61,7 @@ require __DIR__ . '/partials/header.php';
     <a class="btn-secondary" href="logout.php">Log out</a>
     <?php if ($isAdmin): ?>
       <a class="btn-secondary" href="admin_add_product.php">Add Product</a>
+      <a class="btn-secondary" href="sales-report.php">Sales Report</a>
     <?php endif; ?>
   </div>
 
@@ -69,6 +70,7 @@ require __DIR__ . '/partials/header.php';
     <h2>Admin</h2>
     <ul style="margin:.5rem 0 0 1rem;">
       <li><a href="admin_add_product.php">Add Product</a></li>
+      <li><a href="sales-report.php">View Sales Report</a></li>
     </ul>
   </section>
   <?php endif; ?>
