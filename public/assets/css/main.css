@@ -827,3 +827,352 @@ reading-text split-lines::part(letter).on {
   color: var(--error);
   border: 1px solid rgba(220,53,69,.3);
 }
+
+/* ===========================
+   RETURN SYSTEM CSS
+   Add to end of main.css
+   =========================== */
+
+/* Order Status Badges */
+.order-status-badge {
+  display: inline-block;
+  padding: .25rem .75rem;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.order-status-pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: #856404;
+}
+
+.order-status-confirmed,
+.order-status-processing {
+  background: rgba(0, 123, 255, 0.2);
+  color: #004085;
+}
+
+.order-status-shipped {
+  background: rgba(23, 162, 184, 0.2);
+  color: #0c5460;
+}
+
+.order-status-delivered {
+  background: rgba(40, 167, 69, 0.2);
+  color: #155724;
+}
+
+.order-status-cancelled {
+  background: rgba(220, 53, 69, 0.2);
+  color: #721c24;
+}
+
+/* Return Status Badges */
+.return-status-badge {
+  display: inline-block;
+  padding: .25rem .75rem;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.return-status-pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: #856404;
+}
+
+.return-status-approved {
+  background: rgba(0, 123, 255, 0.2);
+  color: #004085;
+}
+
+.return-status-rejected {
+  background: rgba(220, 53, 69, 0.2);
+  color: #721c24;
+}
+
+.return-status-items_received {
+  background: rgba(23, 162, 184, 0.2);
+  color: #0c5460;
+}
+
+.return-status-completed {
+  background: rgba(40, 167, 69, 0.2);
+  color: #155724;
+}
+
+.return-status-refunded {
+  background: rgba(40, 167, 69, 0.2);
+  color: #155724;
+}
+
+/* Return Button */
+.btn-return {
+  display: inline-block;
+  padding: .5rem 1rem;
+  background: var(--brown-1);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: background-color .2s ease;
+}
+
+.btn-return:hover {
+  background: var(--brown-2);
+}
+
+/* View Return Button */
+.btn-view-return {
+  display: inline-block;
+  padding: .5rem 1rem;
+  background: var(--orange-bright);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: background-color .2s ease;
+}
+
+.btn-view-return:hover {
+  background: var(--orange-dark);
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: .8rem 1.2rem;
+  background: var(--brown-2);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--brown-3);
+}
+
+/* Return Page Layout */
+.return-layout {
+  max-width: 900px;
+  margin: 1.5rem auto;
+}
+
+.return-form {
+  width: 100%;
+}
+
+/* Return Items */
+.return-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.return-item-box {
+  display: block;
+  padding: 1rem;
+  border: 2px solid rgba(0,0,0,.1);
+  border-radius: .75rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.return-item-box:hover {
+  border-color: var(--brown-1);
+  background: rgba(194, 176, 153, 0.05);
+}
+
+.return-item-box:has(.return-checkbox:checked) {
+  border-color: var(--brown-1);
+  background: rgba(194, 176, 153, 0.1);
+}
+
+.return-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.return-item-content {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* Refund Options */
+.refund-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.refund-option-box {
+  display: block;
+  padding: 1rem;
+  border: 2px solid rgba(0,0,0,.1);
+  border-radius: .75rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.refund-option-box:hover {
+  border-color: var(--brown-1);
+  background: rgba(194, 176, 153, 0.05);
+}
+
+.refund-option-box:has(input:checked) {
+  border-color: var(--brown-1);
+  background: rgba(194, 176, 153, 0.1);
+}
+
+.refund-option-box input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Confirmation Layout */
+.return-confirmation-layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 900px) {
+  .return-confirmation-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Return Status Layout */
+.return-status-layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 900px) {
+  .return-status-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Next Steps */
+.next-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.step-item {
+  display: flex;
+  gap: 1rem;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--brown-1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Return Timeline */
+.return-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.return-timeline::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 25px;
+  bottom: 25px;
+  width: 2px;
+  background: #e5e7eb;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+}
+
+.timeline-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  z-index: 1;
+  font-size: 1.2rem;
+}
+
+.timeline-complete .timeline-icon {
+  border-color: #28a745;
+  background: #28a745;
+  color: white;
+}
+
+.timeline-current .timeline-icon {
+  border-color: var(--orange-bright);
+  background: var(--orange-bright);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(250, 96, 0, 0.1);
+}
+
+.timeline-content {
+  flex: 1;
+  padding-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .return-item-content {
+    flex-direction: column;
+  }
+  
+  .return-item-content img {
+    width: 100%;
+    height: 200px;
+  }
+}
+
+/* Card component (if not already defined) */
+.card {
+  background: var(--card);
+  border-radius: 1rem;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06);
+}
+
+/* Notice component */
+.notice {
+  padding: 1rem;
+  background: rgba(0,0,0,.05);
+  border-radius: .5rem;
+  color: var(--muted);
+}
