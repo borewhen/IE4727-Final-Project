@@ -378,7 +378,7 @@ foreach (($initialImages ?: []) as $ti => $img): ?>
           <section style="border:1px solid #eee; border-radius:.5rem; padding:1rem;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.5rem;">
               <div><strong><?php echo htmlspecialchars($v['colour']); ?></strong></div>
-              <label style="display:flex; align-items:center; gap:.25rem;"><input type="checkbox" name="variation[<?php echo $vid; ?>][is_active]" <?php echo ((int)$v['is_active']===1?'checked':''); ?>> Active</label>
+              <label style="display:flex; align-items:center; gap:.25rem;"><input type="checkbox" checked name="variation[<?php echo $vid; ?>][is_active]" <?php echo ((int)$v['is_active']===1?'checked':''); ?>> Active</label>
             </div>
             <div>
               <h3 style="margin:.25rem 0; font-size:1rem;"><em>Size / Stock</em></h3>

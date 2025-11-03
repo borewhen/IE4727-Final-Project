@@ -19,7 +19,7 @@ require_once __DIR__ . '/../config.php';
           <ul class="nav__list">
             <li><a href="products.php">Shop</a></li>
             <li><a href="about.php">About</a></li>
-            <li><a href="about.php#contact">Contact</a></li>
+            <!-- <li><a href="about.php#contact">Contact</a></li> -->
             <li><a href="cart.php" class="nav__cart" aria-label="View cart">Cart</a></li>
             <br>
             <?php if (isset($_SESSION['customer_id'])): ?>
