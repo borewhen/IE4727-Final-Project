@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stock_quantity = isset($_POST['stock_quantity']) ? (int)$_POST['stock_quantity'] : 0;
     $brand = isset($_POST['brand']) ? trim($_POST['brand']) : '';
     $material = isset($_POST['material']) ? trim($_POST['material']) : '';
-    $is_active = isset($_POST['is_active']) ? 1 : 0;
+    $is_active = 1;
     $is_featured = isset($_POST['is_featured']) ? 1 : 0;
 
     $variations = isset($_POST['variations']) && is_array($_POST['variations']) ? $_POST['variations'] : [];
@@ -101,8 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         // Insert product
-        $stmt = $conn->prepare("INSERT INTO products (category_id, name, slug, description, price, stock_quantity, brand, material, image_filename, is_active, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param('isssdiissii', $category_id, $name, $slug, $description, $price, $stock_quantity, $brand, $material, $image_filename, $is_active, $is_featured);
+        $stmt = $conn->prepare("INSERT INTO products (category_id, name, slug, description, price, brand, material, image_filename, is_active, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param('isssdsssii', $category_id, $name, $slug, $description, $price, $brand, $material, $image_filename, $is_active, $is_featured);
         if ($stmt->execute()) {
             $productId = $stmt->insert_id;
             $stmt->close();
@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $insertedCount = 0;
             foreach ($variations as $idx => $v) {
                 $vcolour = isset($v['colour']) ? trim($v['colour']) : '';
-                $vactive = isset($v['var_active']) ? 1 : 0;
+                $vactive = 1;
 
                 $sizes = isset($v['sizes']) && is_array($v['sizes']) ? $v['sizes'] : [];
                 if (empty($sizes) && isset($v['size'])) {
@@ -304,7 +304,7 @@ require __DIR__ . '/partials/header.php';
       </section>
 
       <div style="margin-top:2rem;">
-        <button type="submit" class="btn-primary">Create Product with Variations</button>
+        <button type="submit" class="btn btn--primary">Create Product with Variations</button>
       </div>
     </form>
   </div>
