@@ -10,11 +10,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const otpMessage = document.getElementById('otpMessage');
     const otpVerifyMessage = document.getElementById('otpVerifyMessage');
     
-    // Role toggle elements
-    const roleToggle = document.getElementById('roleToggle');
+    // Role selection elements (chips)
     const userRoleInput = document.getElementById('user_role_input');
     const adminPinGroup = document.getElementById('adminPinGroup');
     const adminPinInput = document.getElementById('admin_pin');
+    const roleChips = Array.prototype.slice.call(document.querySelectorAll('.sizes .size[data-role]'));
     
     let otpVerified = false;
     // Centralize enabling/disabling submit button
@@ -24,48 +24,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let otpSent = false;
     let verifiedEmail = '';
-    let isAdminRole = false;
+    let isAdminRole = (userRoleInput && userRoleInput.value === 'admin');
     
-    // Handle role toggle
-    roleToggle.addEventListener('change', function() {
-        isAdminRole = this.checked;
-        userRoleInput.value = isAdminRole ? 'admin' : 'customer';
-        
+    // Handle role chips
+    function applyRoleUI(role) {
+        if (!adminPinGroup || !adminPinInput || !userRoleInput) return;
+        isAdminRole = (role === 'admin');
+        userRoleInput.value = role;
         if (isAdminRole) {
-            adminPinGroup.style.display = 'block';
+            adminPinGroup.style.display = '';
             adminPinInput.required = true;
         } else {
             adminPinGroup.style.display = 'none';
             adminPinInput.required = false;
             adminPinInput.value = '';
-            // Remove any admin PIN errors
             const adminPinError = adminPinInput.parentNode.querySelector('.field-error:not([data-server-error])');
-            if (adminPinError) {
-                adminPinError.remove();
-            }
+            if (adminPinError) adminPinError.remove();
             adminPinInput.classList.remove('error');
         }
-    });
+    }
+    if (roleChips && roleChips.length) {
+        // initialize from selected chip
+        var selected = roleChips.find(function(b){ return b.classList.contains('is-selected'); });
+        applyRoleUI(selected ? (selected.getAttribute('data-role') || 'customer') : 'customer');
+        roleChips.forEach(function(btn){
+            btn.addEventListener('click', function(){
+                var role = btn.getAttribute('data-role') || 'customer';
+                applyRoleUI(role);
+            });
+        });
+    } else {
+        // Fallback: ensure admin PIN group hidden if not admin
+        applyRoleUI(userRoleInput ? userRoleInput.value : 'customer');
+    }
     
     // Validate admin PIN on input
-    adminPinInput.addEventListener('input', function() {
-        // Only allow numbers
-        this.value = this.value.replace(/[^0-9]/g, '');
-        
-        // Remove error when typing
-        this.classList.remove('error');
-        const errorDiv = this.parentNode.querySelector('.field-error:not([data-server-error])');
-        if (errorDiv) {
-            errorDiv.remove();
-        }
-    });
+    if (adminPinInput) {
+        adminPinInput.addEventListener('input', function() {
+            // Only allow numbers
+            this.value = this.value.replace(/[^0-9]/g, '');
+            // Remove error when typing
+            this.classList.remove('error');
+            const errorDiv = this.parentNode.querySelector('.field-error:not([data-server-error])');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        });
+    }
     
     // Get all form inputs
     const inputs = document.querySelectorAll('input, textarea, select');
     
     // Add blur event listeners to all inputs
     inputs.forEach(input => {
-        if (input.id !== 'otp' && input.id !== 'otp_input' && input.id !== 'verified_email' && input.id !== 'user_role_input' && input.id !== 'roleToggle') {
+        if (input.id !== 'otp' && input.id !== 'otp_input' && input.id !== 'verified_email' && input.id !== 'user_role_input') {
             input.addEventListener('blur', function() {
                 validateField(this);
             });
@@ -359,4 +371,5 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.textContent = 'Registering...';
     });
 });
+
 

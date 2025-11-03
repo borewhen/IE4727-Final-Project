@@ -137,18 +137,12 @@ function sendOrderConfirmationEmail($orderId) {
     $items = $itemsStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $itemsStmt->close();
 
-    // Create short-lived token (2 minutes)
-    $token = bin2hex(random_bytes(16));
-    $expiresAt = date('Y-m-d H:i:s', time() + 120);
-    $tok = $conn->prepare("INSERT INTO order_edit_tokens (order_id, token, expires_at) VALUES (?, ?, ?)");
-    $tok->bind_param('iss', $orderId, $token, $expiresAt);
-    $tok->execute();
-    $tok->close();
     $conn->close();
 
     // Build email body with review link
     $baseUrl = 'http://localhost/IE4727-Final-Project/public/';
-    $reviewUrl = $baseUrl . 'order_review.php?token=' . urlencode($token);
+    // Provide a simple, login-protected link using order number (no token needed)
+    $reviewUrl = $baseUrl . 'order_review.php?order=' . urlencode($order['order_number']);
     $cancelUrl = $reviewUrl . '&action=cancel';
 
     $itemsRows = '';
@@ -158,15 +152,47 @@ function sendOrderConfirmationEmail($orderId) {
         $itemsRows .= '<td style="padding:6px 8px; text-align:right; border-bottom:1px solid #eee;">$' . number_format((float)$it['line_total'], 2) . '</td></tr>';
     }
 
+    // Totals breakdown
+    $subtotal = 0.0;
+    foreach ($items as $it) { $subtotal += (float)($it['line_total'] ?? 0); }
+    $taxRate = 0.09; // match checkout
+    $taxAmount = $subtotal * $taxRate;
+    $shippingFee = $subtotal > 100 ? 0.00 : 10.00;
+    $fmtSubtotal = '$' . number_format($subtotal, 2);
+    $fmtTax = '$' . number_format($taxAmount, 2);
+    $fmtShipping = $shippingFee > 0 ? ('$' . number_format($shippingFee, 2)) : 'FREE';
+    $fmtTotal = '$' . number_format((float)$order['order_total'], 2);
+
     $subject = "Your Order " . $order['order_number'] . " is Confirmed";
     $body = <<<HTML
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Order Confirmation</title></head>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Order Confirmation</title>
+        <style>
+            body { margin:0; padding:0; background:#eeeeee; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#222222; }
+            .container { max-width:600px; margin:24px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.08); }
+            .header { background:#7A553D; color:#ffffff; padding:24px 20px; text-align:center; }
+            .brand { margin:0; font-size:24px; font-weight:700; letter-spacing:.2px; }
+            .sub { margin:6px 0 0; opacity:.9; }
+            .content { padding:32px 28px; }
+            .h2 { margin:0 0 8px 0; font-size:20px; }
+            .muted { color:#7e5d3f; margin:0 0 16px 0; }
+            .otp-box { background:#f7f2ec; padding:24px; text-align:center; border-radius:10px; margin:24px 0; }
+            .otp { font-size:32px; font-weight:800; color:#FA6000; letter-spacing:10px;}
+            .notice { border: 1px solid #7a553d; border-left:4px solid #7a553d; padding:12px 14px; margin:18px 0; border-radius:6px; color:#7a553d; }
+            .footer { background:#f8f9fa; color:#7e5d3f; text-align:center; font-size:12px; padding:16px; }
+        </style>
+    </head>
 <body style="background:#f5f5f5; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;">
   <div style="max-width:680px; margin:24px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.06)">
     <div style="background:#7A553D; color:#fff; padding:22px 20px;">
-      <div style="font-size:20px; font-weight:700;">Order Confirmed</div>
-      <div style="opacity:.9;">Order #{$order['order_number']}</div>
+      <div class="header" style="align-items:center;">
+        <img src="http://localhost/IE4727-Final-Project/public/assets/images/logo.svg" alt="Stirling's Logo" width="140" style="display:block;margin:0 auto;filter:brightness(0) invert(1);">
+        <div class="sub">Order Confirmed</div>
+        <div style="opacity:.9;">Order #{$order['order_number']}</div>
+      </div>
     </div>
     <div style="padding:24px 22px; color:#222;">
       <p>Hi {$order['customer_name']},</p>
@@ -179,21 +205,21 @@ function sendOrderConfirmationEmail($orderId) {
         </thead>
         <tbody>{$itemsRows}</tbody>
         <tfoot>
-          <tr><td></td><td style="text-align:right; padding:8px;"><strong>Order Total</strong></td><td style="text-align:right; padding:8px;"><strong>
-          $${number_format((float)$order['order_total'], 2)}
-          </strong></td></tr>
+          <tr><td></td><td style="text-align:right; padding:8px;">Subtotal</td><td style="text-align:right; padding:8px;">{$fmtSubtotal}</td></tr>
+          <tr><td></td><td style="text-align:right; padding:8px;">Tax (9%)</td><td style="text-align:right; padding:8px;">{$fmtTax}</td></tr>
+          <tr><td></td><td style="text-align:right; padding:8px;">Shipping</td><td style="text-align:right; padding:8px;">{$fmtShipping}</td></tr>
+          <tr><td></td><td style="text-align:right; padding:8px;"><strong>Order Total</strong></td><td style="text-align:right; padding:8px;"><strong>{$fmtTotal}</strong></td></tr>
         </tfoot>
       </table>
-      <div style="margin:18px 0; padding:12px; background:#fff8e1; border-left:4px solid #ffc107; border-radius:6px;">
+      <div class="notice">
         You can review or change your order for the next <strong>2 minutes</strong>.
       </div>
       <p>
         <a href="{$reviewUrl}" style="display:inline-block; background:#7A553D; color:#fff; padding:10px 16px; border-radius:8px; text-decoration:none;">Review / Edit Order</a>
         <a href="{$cancelUrl}" style="display:inline-block; margin-left:10px; background:#b3261e; color:#fff; padding:10px 16px; border-radius:8px; text-decoration:none;">Cancel Order</a>
       </p>
-      <p style="color:#666; font-size:12px;">Links expire at {$expiresAt}.</p>
     </div>
-    <div style="background:#f8f9fa; color:#7e5d3f; text-align:center; font-size:12px; padding:14px;">© Stirling's</div>
+    <div class="footer">&copy; 2025 Stirling&apos;s, Shen Bowen &amp; Shirsho Sinha.</div>
   </div>
 </body></html>
 HTML;

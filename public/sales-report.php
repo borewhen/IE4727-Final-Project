@@ -146,29 +146,6 @@ try {
     // Continue with empty array
 }
 
-// Payment status breakdown
-$paymentStatus = [];
-try {
-    $stmt = $conn->prepare("
-        SELECT 
-            payment_status,
-            COUNT(*) as count,
-            COALESCE(SUM(order_total), 0) as total
-        FROM orders
-        WHERE created_at BETWEEN ? AND ?
-        GROUP BY payment_status
-    ");
-    $stmt->bind_param("ss", $startDate, $endDate);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result) {
-        $paymentStatus = $result->fetch_all(MYSQLI_ASSOC);
-    }
-    $stmt->close();
-} catch (Exception $e) {
-    // Continue with empty array
-}
-
 // Top customers
 $topCustomers = [];
 try {
@@ -419,7 +396,7 @@ require __DIR__ . '/partials/header.php';
   </div>
 
   <!-- ==================== CHARTS ROW ==================== -->
-  <?php if (!empty($salesByStatus) || !empty($paymentStatus)): ?>
+  <?php if (!empty($salesByStatus) || !empty($topProducts) || !empty($topCustomers)): ?>
   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
     
     <!-- Sales by Status -->
@@ -450,30 +427,82 @@ require __DIR__ . '/partials/header.php';
     </div>
     <?php endif; ?>
 
-    <!-- Payment Status -->
-    <?php if (!empty($paymentStatus)): ?>
+    <!-- Top Products -->
+    <?php if (!empty($topProducts)): ?>
     <div class="card" style="padding:1.5rem;">
-      <h2 style="margin:0 0 1rem; font-size:1.25rem;">Payment Status</h2>
-      <div class="chart-container">
-        <?php foreach ($paymentStatus as $payment): ?>
-          <?php 
-            $percentage = $salesMetrics['total_orders'] > 0 
-              ? ($payment['count'] / $salesMetrics['total_orders']) * 100 
-              : 0;
-          ?>
-          <div style="margin-bottom:1rem;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:.5rem; font-size:.9rem;">
-              <span style="font-weight:600; text-transform:capitalize;"><?php echo $payment['payment_status']; ?></span>
-              <span style="color:var(--muted);"><?php echo $payment['count']; ?> orders</span>
-            </div>
-            <div class="progress-bar" style="height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden;">
-              <div class="progress-fill" style="width:<?php echo $percentage; ?>%; height:100%; background:<?php echo $payment['payment_status'] === 'paid' ? '#28a745' : '#ffc107'; ?>; transition:width .3s;"></div>
-            </div>
-            <div style="text-align:right; margin-top:.25rem; font-size:.85rem; color:var(--muted);">
-              $<?php echo number_format($payment['total'], 2); ?>
-            </div>
-          </div>
-        <?php endforeach; ?>
+      <h2 style="margin:0 0 1rem; font-size:1.25rem;">Top Products</h2>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb;">
+              <th style="text-align:left; padding:.5rem; font-size:.85rem; color:var(--muted);">Product</th>
+              <th style="text-align:center; padding:.5rem; font-size:.85rem; color:var(--muted);">Sold</th>
+              <th style="text-align:right; padding:.5rem; font-size:.85rem; color:var(--muted);">Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($topProducts)): ?>
+              <tr>
+                <td colspan="3" style="text-align:center; padding:2rem; color:var(--muted);">No products sold yet</td>
+              </tr>
+            <?php else: ?>
+              <?php foreach ($topProducts as $product): ?>
+                <tr style="border-bottom:1px solid #f0f0f0;">
+                  <td style="padding:.75rem .5rem;">
+                    <div style="font-weight:600; margin-bottom:.125rem; font-size:.9rem; word-break:break-word;"><?php echo htmlspecialchars($product['product_name']); ?></div>
+                    <div style="font-size:.75rem; color:var(--muted);"><?php echo $product['order_count']; ?> orders</div>
+                  </td>
+                  <td style="padding:.75rem .5rem; text-align:center; font-weight:600; font-size:.9rem;">
+                    <?php echo $product['total_quantity']; ?>
+                  </td>
+                  <td style="padding:.75rem .5rem; text-align:right; font-weight:700; color:var(--brown-1); font-size:.9rem;">
+                    $<?php echo number_format($product['total_revenue'], 2); ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Top Customers -->
+    <?php if (!empty($topCustomers)): ?>
+    <div class="card" style="padding:1.5rem;">
+      <h2 style="margin:0 0 1rem; font-size:1.25rem;">Top Customers</h2>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #e5e7eb;">
+              <th style="text-align:left; padding:.5rem; font-size:.85rem; color:var(--muted);">Customer</th>
+              <th style="text-align:center; padding:.5rem; font-size:.85rem; color:var(--muted);">Orders</th>
+              <th style="text-align:right; padding:.5rem; font-size:.85rem; color:var(--muted);">Total Spent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($topCustomers)): ?>
+              <tr>
+                <td colspan="3" style="text-align:center; padding:2rem; color:var(--muted);">No customers yet</td>
+              </tr>
+            <?php else: ?>
+              <?php foreach ($topCustomers as $customer): ?>
+                <tr style="border-bottom:1px solid #f0f0f0;">
+                  <td style="padding:.75rem .5rem;">
+                    <div style="font-weight:600; margin-bottom:.125rem; font-size:.9rem; word-break:break-word;"><?php echo htmlspecialchars($customer['customer_name']); ?></div>
+                    <div style="font-size:.75rem; color:var(--muted); word-break:break-all;"><?php echo htmlspecialchars($customer['customer_email']); ?></div>
+                  </td>
+                  <td style="padding:.75rem .5rem; text-align:center; font-weight:600; font-size:.9rem;">
+                    <?php echo $customer['order_count']; ?>
+                  </td>
+                  <td style="padding:.75rem .5rem; text-align:right; font-weight:700; color:var(--brown-1); font-size:.9rem;">
+                    $<?php echo number_format($customer['total_spent'], 2); ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
       </div>
     </div>
     <?php endif; ?>

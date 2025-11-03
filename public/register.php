@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = isset($_POST['password']) ? $_POST['password'] : '';
     $confirm_password = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
     $shipping_address = isset($_POST['shipping_address']) ? trim($_POST['shipping_address']) : '';
-    $pincode = isset($_POST['pincode']) ? trim($_POST['pincode']) : '';
+    $postalcode = isset($_POST['postalcode']) ? trim($_POST['postalcode']) : '';
     
     // Role and admin PIN
     $user_role = isset($_POST['user_role']) ? $_POST['user_role'] : 'customer';
@@ -105,11 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $field_errors['shipping_address'] = 'Please enter a complete address (at least 10 characters)';
     }
     
-    // Pincode validation
-    if (empty($pincode)) {
-        $field_errors['pincode'] = 'Pincode is required';
-    } elseif (!preg_match('/^[0-9]{5,10}$/', $pincode)) {
-        $field_errors['pincode'] = 'Pincode must be 5-10 digits';
+    // postalcode validation
+    if (empty($postalcode)) {
+        $field_errors['postalcode'] = 'postalcode is required';
+    } elseif (!preg_match('/^[0-9]{5,10}$/', $postalcode)) {
+        $field_errors['postalcode'] = 'postalcode must be 5-10 digits';
     }
     
     // Admin PIN validation
@@ -154,8 +154,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Combine country code and phone
             $full_phone = $country_code . $phone;
             
-            // Combine address with pincode
-            $full_address = $shipping_address . ', Pincode: ' . $pincode;
+            // Combine address with postalcode
+            $full_address = $shipping_address . ', Postal Code: ' . $postalcode;
             
             // Set is_admin flag based on role
             $is_admin = ($user_role === 'admin') ? 1 : 0;
@@ -222,20 +222,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
             
             <form method="POST" action="register.php" id="registerForm" novalidate>
-                <!-- Role Toggle -->
-                <label class="role-toggle-label">
-                    <span class="role-text">Register as:</span>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="roleToggle" name="user_role" value="admin">
-                        <span class="toggle-label-customer">Customer</span>
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-label-admin">Admin</span>
+                <!-- Role selection (chips like product sizes) -->
+                <div class="form-group">
+                    <label class="role-toggle-label">Register as <span class="required">*</span></label>
+                    <div class="sizes" role="radiogroup" aria-label="Choose role">
+                        <button type="button" class="size is-selected" data-role="customer" aria-checked="true">Customer</button>
+                        <button type="button" class="size" data-role="admin" aria-checked="false">Admin</button>
                     </div>
-                </label>
-                
-                <br>
-                
-                <!-- customer / admin toggle -->
+                </div>
+
+                <!-- Hidden field reflects current selection -->
                 <input type="hidden" id="user_role_input" name="user_role" value="customer">
                 <div class="form-group" id="adminPinGroup" style="display: none;">
                     <label for="admin_pin">Admin PIN <span class="required">*</span></label>
@@ -381,18 +377,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <div class="form-group">
-                    <label for="pincode">Postal Code<span class="required">*</span></label>
+                    <label for="postalcode">Postal Code<span class="required">*</span></label>
                     <input 
                         type="text" 
-                        id="pincode" 
-                        name="pincode" 
-                        class="<?php echo isset($field_errors['pincode']) ? 'error' : ''; ?>"
-                        value="<?php echo isset($_POST['pincode']) ? htmlspecialchars($_POST['pincode']) : ''; ?>"
+                        id="postalcode" 
+                        name="postalcode" 
+                        class="<?php echo isset($field_errors['postalcode']) ? 'error' : ''; ?>"
+                        value="<?php echo isset($_POST['postalcode']) ? htmlspecialchars($_POST['postalcode']) : ''; ?>"
                         placeholder="639798"
                         maxlength="10"
                     >
-                    <?php if (isset($field_errors['pincode'])): ?>
-                        <div class="field-error" data-server-error><?php echo htmlspecialchars($field_errors['pincode']); ?></div>
+                    <?php if (isset($field_errors['postalcode'])): ?>
+                        <div class="field-error" data-server-error><?php echo htmlspecialchars($field_errors['postalcode']); ?></div>
                     <?php endif; ?>
                 </div>
                 
@@ -425,7 +421,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-primary" id="submitBtn" disabled>Register</button>
+                <button type="submit" class="btn btn--primary btn--full" id="submitBtn" disabled>Register</button>
                 <p class="form-note">* Required fields</p>
             </form>
             
@@ -438,4 +434,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <script src="assets/js/register_validation.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var roleInput = document.getElementById('user_role_input');
+  var adminPinGroup = document.getElementById('adminPinGroup');
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.sizes .size'));
+  function setRole(role){
+    if (!roleInput) return;
+    roleInput.value = role;
+    if (adminPinGroup) adminPinGroup.style.display = (role === 'admin') ? '' : 'none';
+  }
+  chips.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var role = btn.getAttribute('data-role') || 'customer';
+      chips.forEach(function(b){
+        var isSel = (b === btn);
+        b.classList.toggle('is-selected', isSel);
+        b.setAttribute('aria-checked', isSel ? 'true' : 'false');
+      });
+      setRole(role);
+    });
+  });
+});
+</script>
 <?php require __DIR__ . '/partials/footer.php'; ?>

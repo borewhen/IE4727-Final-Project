@@ -1,19 +1,16 @@
 <?php
 require_once 'check_session.php';
 
-// Require login for checkout
 requireLogin();
 
 $user = getCurrentUser();
 $error_message = '';
 $success_message = '';
 
-// Debug logging function
 function debug_log($message) {
     error_log('[CHECKOUT DEBUG] ' . $message);
 }
 
-// Get cart items
 $conn = getDBConnection();
 $stmt = $conn->prepare("
     SELECT 
@@ -21,13 +18,15 @@ $stmt = $conn->prepare("
         ci.quantity,
         ci.size,
         ci.color,
+        ci.variation_id,
+        ci.variation_size_id,
         p.id as product_id,
         p.name,
         p.price,
         p.image_filename,
-        p.stock_quantity,
         p.brand,
-        (ci.quantity * p.price) as subtotal
+        (ci.quantity * p.price) as subtotal,
+        (SELECT vs.stock_quantity FROM variation_sizes vs WHERE vs.id = ci.variation_size_id LIMIT 1) AS variant_stock
     FROM cart_items ci
     JOIN products p ON ci.product_id = p.id
     WHERE ci.customer_id = ? AND p.is_active = 1
@@ -45,15 +44,14 @@ if (empty($cart_items)) {
     exit();
 }
 
-// Calculate totals
 $cart_total = 0;
 foreach ($cart_items as $item) {
     $cart_total += $item['subtotal'];
 }
 
-$tax_rate = 0.08; // 8% tax
+$tax_rate = 0.09;
 $tax_amount = $cart_total * $tax_rate;
-$shipping_fee = $cart_total > 100 ? 0 : 10.00; // Free shipping over $100
+$shipping_fee = $cart_total > 100 ? 0 : 10.00;
 $grand_total = $cart_total + $tax_amount + $shipping_fee;
 
 // Get user's saved address
@@ -83,10 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         // Get form data
         $shipping_address = trim($_POST['shipping_address'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
-        $payment_method = $_POST['payment_method'] ?? '';
         $special_instructions = trim($_POST['special_instructions'] ?? '');
         
-        debug_log("Shipping: $shipping_address, Phone: $phone, Payment: $payment_method");
+        debug_log("Shipping: $shipping_address, Phone: $phone");
         
         // Validate
         $validation_errors = [];
@@ -97,10 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         
         if (empty($phone)) {
             $validation_errors[] = 'Phone number is required';
-        }
-        
-        if (empty($payment_method)) {
-            $validation_errors[] = 'Please select a payment method';
         }
         
         if (!empty($validation_errors)) {
@@ -114,17 +107,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             try {
                 debug_log('Transaction started');
                 
-                // Create order number
                 $order_number = 'ORD-' . strtoupper(uniqid());
                 debug_log("Generated order number: $order_number");
                 
-                // Prepare customer name
                 $customer_name = $customer_data['first_name'] . ' ' . $customer_data['last_name'];
                 $customer_email = $customer_data['email'];
                 
                 debug_log("Customer: $customer_name ($customer_email)");
                 
-                // Insert order (matching your exact schema)
                 $stmt = $conn->prepare("
                     INSERT INTO orders (
                         customer_id, 
@@ -135,10 +125,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                         shipping_address, 
                         order_total, 
                         order_status, 
-                        payment_status,
                         special_instructions,
                         created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?, NOW())
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, NOW())
                 ");
                 
                 if (!$stmt) {
@@ -165,10 +154,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                 debug_log("Order created with ID: $order_id");
                 $stmt->close();
                 
+                // Prepare variation image lookup
+                $viStmt = $conn->prepare("SELECT image_filename FROM variation_images WHERE variation_id = ? ORDER BY sort_order, id LIMIT 1");
+
                 // Insert order items (matching your exact schema)
                 $item_count = 0;
                 foreach ($cart_items as $item) {
                     $line_total = $item['subtotal'];
+                    // Determine image from variation_images (fallback to product image)
+                    $imageForItem = $item['image_filename'];
+                    if (!empty($item['variation_id'])) {
+                        $vid = (int)$item['variation_id'];
+                        $viStmt->bind_param('i', $vid);
+                        $viStmt->execute();
+                        $viRes = $viStmt->get_result()->fetch_assoc();
+                        if ($viRes && !empty($viRes['image_filename'])) {
+                            $imageForItem = $viRes['image_filename'];
+                        }
+                    }
                     
                     $stmt = $conn->prepare("
                         INSERT INTO order_items (
@@ -193,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                         $order_id,
                         $item['product_id'],
                         $item['name'],
-                        $item['image_filename'],
+                        $imageForItem,
                         $item['size'],
                         $item['color'],
                         $item['quantity'],
@@ -208,26 +211,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                     $stmt->close();
                     $item_count++;
                     
-                    // Update product stock
+                    // Update variant size stock (instead of product stock)
                     $stmt = $conn->prepare("
-                        UPDATE products 
-                        SET stock_quantity = stock_quantity - ? 
+                        UPDATE variation_sizes 
+                        SET stock_quantity = GREATEST(0, stock_quantity - ?) 
                         WHERE id = ?
                     ");
-                    
-                    if (!$stmt) {
-                        throw new Exception("Prepare stock update failed: " . $conn->error);
-                    }
-                    
-                    $stmt->bind_param("ii", $item['quantity'], $item['product_id']);
-                    
-                    if (!$stmt->execute()) {
-                        throw new Exception("Stock update failed: " . $stmt->error);
-                    }
-                    
+                    if (!$stmt) { throw new Exception("Prepare variant stock update failed: " . $conn->error); }
+                    $stmt->bind_param("ii", $item['quantity'], $item['variation_size_id']);
+                    if (!$stmt->execute()) { throw new Exception("Variant stock update failed: " . $stmt->error); }
                     $stmt->close();
                 }
-                
+                $viStmt->close();
                 debug_log("Inserted $item_count order items");
                 
                 // Clear cart
@@ -247,6 +242,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                 // Commit transaction
                 $conn->commit();
                 debug_log("Transaction committed successfully");
+                
+                // Send order confirmation email with 2-minute edit window
+                require_once __DIR__ . '/email_config.php';
+                @sendOrderConfirmationEmail($order_id);
                 
                 // Redirect to order confirmation
                 debug_log("Redirecting to order_confirmation.php?order=$order_number");
@@ -346,46 +345,6 @@ require __DIR__ . '/partials/header.php';
           </div>
         </section>
 
-        <!-- Payment Method -->
-        <section class="checkout-section">
-          <h2 class="section-title">Payment Method</h2>
-          
-          <div class="payment-methods">
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="credit_card" required>
-              <div class="payment-option-content">
-                <div class="payment-icon">💳</div>
-                <div class="payment-details">
-                  <strong>Credit/Debit Card</strong>
-                  <span>Visa, Mastercard, Amex</span>
-                </div>
-              </div>
-            </label>
-            
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="paypal">
-              <div class="payment-option-content">
-                <div class="payment-icon">🅿️</div>
-                <div class="payment-details">
-                  <strong>PayPal</strong>
-                  <span>Fast & Secure</span>
-                </div>
-              </div>
-            </label>
-            
-            <label class="payment-option">
-              <input type="radio" name="payment_method" value="cash_on_delivery">
-              <div class="payment-option-content">
-                <div class="payment-icon">💵</div>
-                <div class="payment-details">
-                  <strong>Cash on Delivery</strong>
-                  <span>Pay when you receive</span>
-                </div>
-              </div>
-            </label>
-          </div>
-        </section>
-
         <button type="submit" name="place_order" class="btn btn--primary btn--full btn--large">
           Place Order - $<?php echo number_format($grand_total, 2); ?>
         </button>
@@ -452,10 +411,6 @@ require __DIR__ . '/partials/header.php';
       <div class="summary-row summary-row--total">
         <span>Total</span>
         <span>$<?php echo number_format($grand_total, 2); ?></span>
-      </div>
-
-      <div class="security-badge">
-        🔒 Secure Checkout
       </div>
     </aside>
   </div>

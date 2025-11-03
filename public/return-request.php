@@ -89,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_return'])) {
     $return_items = isset($_POST['return_items']) ? $_POST['return_items'] : [];
     $return_reason = trim($_POST['return_reason'] ?? '');
     $return_details = trim($_POST['return_details'] ?? '');
-    $refund_method = $_POST['refund_method'] ?? '';
     
     // Validation
     $validation_errors = [];
@@ -106,10 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_return'])) {
         $validation_errors[] = 'Please provide details about the return';
     } elseif (strlen($return_details) < 20) {
         $validation_errors[] = 'Return details must be at least 20 characters';
-    }
-    
-    if (empty($refund_method)) {
-        $validation_errors[] = 'Please select a refund method';
     }
     
     if (!empty($validation_errors)) {
@@ -145,24 +140,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_return'])) {
                     return_status,
                     return_reason, 
                     return_details, 
-                    refund_method, 
                     return_total,
-                    order_status_at_request,
-                    payment_status_at_request,
                     requested_at
-                ) VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, NOW())
+                ) VALUES (?, ?, ?, 'pending', ?, ?, ?, NOW())
             ");
             $stmt->bind_param(
-                "iissssiss",
+                "iisssd",
                 $order['id'],
                 $user['id'],
                 $return_number,
                 $return_reason,
                 $return_details,
-                $refund_method,
-                $return_total,
-                $order['order_status'],
-                $order['payment_status']
+                $return_total
             );
             $stmt->execute();
             $return_id = $conn->insert_id;
@@ -297,36 +286,6 @@ require __DIR__ . '/partials/header.php';
           style="width:100%; padding:.75rem; border:1px solid rgba(0,0,0,.2); border-radius:.5rem; font:inherit; resize:vertical;"
         ></textarea>
         <small style="display:block; margin-top:.5rem; color:var(--muted); font-size:.85rem;">Minimum 20 characters required</small>
-      </div>
-
-      <!-- Refund Method -->
-      <div class="card" style="padding:1.5rem; margin-bottom:1.5rem;">
-        <h2 style="margin:0 0 1rem 0; font-size:1.25rem;">Preferred Refund Method <span class="required">*</span></h2>
-        <div class="refund-options">
-          <label class="refund-option-box">
-            <input type="radio" name="refund_method" value="original_payment" required>
-            <div>
-              <strong>Original Payment Method</strong>
-              <p style="margin:.25rem 0 0; font-size:.85rem; color:var(--muted);">Refund to your original payment method</p>
-            </div>
-          </label>
-          
-          <label class="refund-option-box">
-            <input type="radio" name="refund_method" value="store_credit">
-            <div>
-              <strong>Store Credit</strong>
-              <p style="margin:.25rem 0 0; font-size:.85rem; color:var(--muted);">Receive store credit for future purchases</p>
-            </div>
-          </label>
-          
-          <label class="refund-option-box">
-            <input type="radio" name="refund_method" value="exchange">
-            <div>
-              <strong>Exchange</strong>
-              <p style="margin:.25rem 0 0; font-size:.85rem; color:var(--muted);">Exchange for a different product</p>
-            </div>
-          </label>
-        </div>
       </div>
 
       <!-- Important Notes -->

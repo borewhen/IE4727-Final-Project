@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                 </div>
                 
-                <button type="submit" class="btn-primary">Login</button>
+                <button type="submit" class="btn btn--primary btn--full">Login</button>
             </form>
             
             <div class="form-footer">

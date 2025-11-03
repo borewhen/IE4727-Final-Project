@@ -1,10 +1,10 @@
 -- db name is "stirling"
 
 SET FOREIGN_KEY_CHECKS=0;
-DROP TABLE IF EXISTS order_edit_tokens, variation_sizes, variation_images, product_variations, order_items, orders, cart_items, customers, products, categories;
+DROP TABLE IF EXISTS order_edit_tokens, variation_sizes, variation_images, product_variations, order_items, orders, cart_items, customers, products, categories,
+returns, return_items;
 SET FOREIGN_KEY_CHECKS=1;
 
--- 1) Categories (e.g., Shirts, Pants, Shoes, Watches, Bags)
 CREATE TABLE categories (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL UNIQUE,
@@ -14,7 +14,7 @@ CREATE TABLE categories (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed default categories
+-- default categories
 INSERT IGNORE INTO categories (name, slug, description, is_active) VALUES
  ('Shoes', 'shoes', '', 1),
  ('Shirts', 'shirts', '', 1),
@@ -22,7 +22,6 @@ INSERT IGNORE INTO categories (name, slug, description, is_active) VALUES
  ('Outerwear', 'outerwear', '', 1),
  ('Accessories', 'accessories', '', 1);
 
--- 2) Products (individual items like "Classic Oxford Shirt", "Leather Messenger Bag")
 CREATE TABLE products (
   id INT AUTO_INCREMENT PRIMARY KEY,
   category_id INT NOT NULL,
@@ -30,7 +29,6 @@ CREATE TABLE products (
   slug VARCHAR(200) NOT NULL UNIQUE,
   description TEXT,
   price DECIMAL(10,2) NOT NULL,
-  stock_quantity INT NOT NULL DEFAULT 0,
   brand VARCHAR(100),
   material VARCHAR(100),
   image_filename VARCHAR(255),
@@ -44,7 +42,6 @@ CREATE TABLE products (
   INDEX(is_featured)
 );
 
--- 7) Product Variations (e.g., colour-level variant)
 CREATE TABLE product_variations (
   id INT AUTO_INCREMENT PRIMARY KEY,
   product_id INT NOT NULL,
@@ -65,7 +62,6 @@ CREATE TABLE variation_images (
   FOREIGN KEY (variation_id) REFERENCES product_variations(id) ON DELETE CASCADE
 );
 
--- 9) Variation Sizes (stock tracked per size under a variation)
 CREATE TABLE variation_sizes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   variation_id INT NOT NULL,
@@ -76,19 +72,6 @@ CREATE TABLE variation_sizes (
   FOREIGN KEY (variation_id) REFERENCES product_variations(id) ON DELETE CASCADE
 );
 
--- 10) Order Edit Tokens (time-limited edit links)
-CREATE TABLE order_edit_tokens (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  order_id INT NOT NULL,
-  token VARCHAR(64) NOT NULL UNIQUE,
-  expires_at DATETIME NOT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX(order_id),
-  INDEX(expires_at),
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-);
-
--- 3) Customers (registered users)
 CREATE TABLE customers (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(150) NOT NULL UNIQUE,
@@ -103,22 +86,26 @@ CREATE TABLE customers (
   INDEX(email)
 );
 
--- 4) Cart Items (shopping cart for logged-in users)
 CREATE TABLE cart_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
   customer_id INT NOT NULL,
   product_id INT NOT NULL,
-  size VARCHAR(10),
+  variation_id INT NOT NULL,
+  variation_size_id INT NOT NULL,
+  size VARCHAR(32),
   color VARCHAR(50),
   quantity INT NOT NULL DEFAULT 1,
   added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (variation_id) REFERENCES product_variations(id) ON DELETE CASCADE,
+  FOREIGN KEY (variation_size_id) REFERENCES variation_sizes(id) ON DELETE CASCADE,
   INDEX(customer_id),
-  INDEX(product_id)
+  INDEX(product_id),
+  INDEX(variation_id),
+  INDEX(variation_size_id)
 );
 
--- 5) Orders (order header with customer and shipping info)
 CREATE TABLE orders (
   id INT AUTO_INCREMENT PRIMARY KEY,
   customer_id INT,
@@ -128,8 +115,7 @@ CREATE TABLE orders (
   customer_phone VARCHAR(20),
   shipping_address TEXT NOT NULL,
   order_total DECIMAL(10,2) NOT NULL,
-  order_status ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
-  payment_status ENUM('pending', 'paid', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
+  order_status ENUM('confirmed', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'confirmed',
   design_approved TINYINT(1) NOT NULL DEFAULT 0,
   mockup_filename VARCHAR(255),
   special_instructions TEXT,
@@ -145,7 +131,6 @@ CREATE TABLE orders (
   INDEX(created_at)
 );
 
--- 6) Order Items (line items with locked prices)
 CREATE TABLE order_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
   order_id INT NOT NULL,
@@ -163,9 +148,9 @@ CREATE TABLE order_items (
   INDEX(product_id)
 );
 
-INSERT INTO `products` (`id`, `category_id`, `name`, `slug`, `description`, `price`, `stock_quantity`, `brand`, `material`, `image_filename`, `is_active`, `is_featured`, `created_at`, `updated_at`) VALUES
-(2, 4, 'Stirling\'s Blazer', 'stirlings-blazer', 'Our signature look.', 529.00, 0, '0', 'Wool', 'assets/images/products/stirlings-blazer/main.jpg', 1, 0, '2025-11-02 06:48:13', '2025-11-02 06:48:13'),
-(3, 4, 'Miznon\'s Checkered Blazer', 'miznons-checkered-blazer', 'Take style up a level with the checkered patterns.', 659.00, 0, '0', '', 'assets/images/products/miznons-checkered-blazer/main.jpg', 1, 0, '2025-11-02 07:15:20', '2025-11-02 07:15:20');
+INSERT INTO `products` (`id`, `category_id`, `name`, `slug`, `description`, `price`, `brand`, `material`, `image_filename`, `is_active`, `is_featured`, `created_at`, `updated_at`) VALUES
+(2, 4, 'Stirling\'s Blazer', 'stirlings-blazer', 'Our signature look.', 529.00, '0', 'Wool', 'assets/images/products/stirlings-blazer/main.jpg', 1, 0, '2025-11-02 06:48:13', '2025-11-02 06:48:13'),
+(3, 4, 'Miznon\'s Checkered Blazer', 'miznons-checkered-blazer', 'Take style up a level with the checkered patterns.', 659.00, '0', '', 'assets/images/products/miznons-checkered-blazer/main.jpg', 1, 0, '2025-11-02 07:15:20', '2025-11-02 07:15:20');
 
 INSERT INTO `product_variations` (`id`, `product_id`, `colour`, `is_active`, `created_at`) VALUES
 (2, 2, 'Cream', 1, '2025-11-02 06:48:13'),
@@ -181,66 +166,36 @@ INSERT INTO `variation_sizes` (`id`, `variation_id`, `size`, `stock_quantity`, `
 (5, 3, '44', 5, '2025-11-02 07:15:20'),
 (6, 3, '46', 2, '2025-11-02 07:15:20');
 
--- 11) Returns Table (Main return request data)
 CREATE TABLE returns (
   id INT AUTO_INCREMENT PRIMARY KEY,
   order_id INT NOT NULL,
   customer_id INT NOT NULL,
   return_number VARCHAR(50) NOT NULL UNIQUE,
-  
-  -- Return status lifecycle
   return_status ENUM('pending', 'approved', 'rejected', 'items_received', 'completed', 'refunded') 
     NOT NULL DEFAULT 'pending',
-  
-  -- Return details
-  return_reason VARCHAR(50) NOT NULL,
-  return_details TEXT NOT NULL,
-  refund_method VARCHAR(50) NOT NULL,
   return_total DECIMAL(10,2) NOT NULL,
-  
-  -- Context at time of return
-  order_status_at_request VARCHAR(50),
-  payment_status_at_request VARCHAR(50),
-  
-  -- Timestamps
   requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   approved_at DATETIME,
   rejected_at DATETIME,
   items_received_at DATETIME,
   completed_at DATETIME,
   refunded_at DATETIME,
-  
-  -- Admin fields
-  rejection_reason TEXT,
-  admin_notes TEXT,
-  return_shipping_tracking VARCHAR(100),
-  
-  -- Foreign keys
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
-  
-  -- Indexes for performance
   INDEX(order_id),
   INDEX(customer_id),
   INDEX(return_number),
   INDEX(return_status),
   INDEX(requested_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
 
--- 12) Return Items Table (Which specific items are being returned)
 CREATE TABLE return_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
   return_id INT NOT NULL,
   order_item_id INT NOT NULL,
   quantity INT NOT NULL DEFAULT 1,
-  
-  -- Item condition when returned
-  item_condition VARCHAR(50) DEFAULT 'pending_inspection',
-  condition_notes TEXT,
-  
   FOREIGN KEY (return_id) REFERENCES returns(id) ON DELETE CASCADE,
   FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
-  
   INDEX(return_id),
   INDEX(order_item_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);

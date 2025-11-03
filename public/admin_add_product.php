@@ -276,19 +276,15 @@ require __DIR__ . '/partials/header.php';
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="stock_quantity">Stock (initial)</label>
-            <input type="number" id="stock_quantity" name="stock_quantity" min="0" value="0">
-          </div>
-          <div class="form-group">
             <label for="brand">Brand</label>
             <input type="text" id="brand" name="brand">
           </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label for="material">Material</label>
             <input type="text" id="material" name="material">
           </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
             <label for="main_image">Main Image</label>
             <input type="file" id="main_image" name="main_image" accept="image/*">
@@ -297,10 +293,6 @@ require __DIR__ . '/partials/header.php';
         <div class="form-group">
           <label for="description">Description</label>
           <textarea id="description" name="description" rows="4"></textarea>
-        </div>
-        <div class="form-row">
-          <label style="display:flex; align-items:center; gap:.5rem;"><input type="checkbox" name="is_active" checked> Active</label>
-          <label style="display:flex; align-items:center; gap:.5rem;"><input type="checkbox" name="is_featured"> Featured</label>
         </div>
       </section>
 
@@ -350,19 +342,18 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Size</label>
-          <div data-sizes></div>
-          <button type="button" class="btn-secondary" data-add-size>Add Size</button>
-        </div>
-        <div class="form-group">
           <label>Colour</label>
           <input type="text" name="variations[${index}][colour]" placeholder="e.g. Navy">
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group" style="display:flex; align-items:flex-end;">
-          <label style="display:flex; align-items:center; gap:.5rem;"><input type="checkbox" name="variations[${index}][var_active]" checked> Active</label>
+        <div class="form-group">
+          <label>Size</label>
+          <div data-sizes></div>
+          <button type="button" class="btn-secondary" data-add-size>Add Size</button>
         </div>
+      </div>
+      <div class="form-row">
       </div>
       <div class="form-group">
         <label>Variation Images</label>

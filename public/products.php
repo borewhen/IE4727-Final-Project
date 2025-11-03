@@ -49,7 +49,7 @@ require __DIR__ . '/partials/header.php';
     <h1 class="shop-title">Shop</h1>
     <p class="shop-subtitle">Refined essentials for everyday wear.</p>
     <form method="GET" action="products.php" class="form-row" style="margin-top:1rem; gap:.5rem; align-items:center;">
-      <input type="search" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="Search products..." style="flex:1; max-width:420px;">
+      <input type="search" class="search" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="Search products..." style="flex:1; max-width:420px;">
       <?php if ($cat !== ''): ?><input type="hidden" name="cat" value="<?php echo htmlspecialchars($cat); ?>"><?php endif; ?>
       <button type="submit" class="btn-secondary">Search</button>
     </form>

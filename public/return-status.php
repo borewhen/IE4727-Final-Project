@@ -187,10 +187,7 @@ require __DIR__ . '/partials/header.php';
             <td style="padding:.5rem 0; color:var(--muted);">Return Reason:</td>
             <td style="padding:.5rem 0; font-weight:600;"><?php echo ucfirst(str_replace('_', ' ', $return['return_reason'])); ?></td>
           </tr>
-          <tr>
-            <td style="padding:.5rem 0; color:var(--muted);">Refund Method:</td>
-            <td style="padding:.5rem 0; font-weight:600;"><?php echo ucfirst(str_replace('_', ' ', $return['refund_method'])); ?></td>
-          </tr>
+          
           <tr>
             <td style="padding:.5rem 0; color:var(--muted);">Return Total:</td>
             <td style="padding:.5rem 0; font-weight:700; color:var(--brown-1);">$<?php echo number_format($return['return_total'], 2); ?></td>
