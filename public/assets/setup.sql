@@ -150,21 +150,70 @@ CREATE TABLE order_items (
 
 INSERT INTO `products` (`id`, `category_id`, `name`, `slug`, `description`, `price`, `brand`, `material`, `image_filename`, `is_active`, `is_featured`, `created_at`, `updated_at`) VALUES
 (2, 4, 'Stirling\'s Blazer', 'stirlings-blazer', 'Our signature look.', 529.00, '0', 'Wool', 'assets/images/products/stirlings-blazer/main.jpg', 1, 0, '2025-11-02 06:48:13', '2025-11-02 06:48:13'),
-(3, 4, 'Miznon\'s Checkered Blazer', 'miznons-checkered-blazer', 'Take style up a level with the checkered patterns.', 659.00, '0', '', 'assets/images/products/miznons-checkered-blazer/main.jpg', 1, 0, '2025-11-02 07:15:20', '2025-11-02 07:15:20');
+(3, 4, 'Miznon\'s Checkered Blazer', 'miznons-checkered-blazer', 'Take style up a level with the checkered patterns.', 659.00, '0', '', 'assets/images/products/miznons-checkered-blazer/main.jpg', 1, 0, '2025-11-02 07:15:20', '2025-11-02 07:15:20'),
+(4, 2, 'Kamakura Shirt', 'kamakura-shirt', 'The finest from Kamakura Shirts, Japan.', 79.00, 'Kamakura', 'Cotton', 'assets/images/products/kamakura-shirt/main.jpg', 1, 0, '2025-11-03 11:14:51', '2025-11-03 11:15:57'),
+(6, 1, 'Joseph Cheaney Oxfords', 'joseph-cheaney-oxfords', 'Only the best from the well-known shoemakers, Joseph Cheaney.', 800.00, 'Joseph Cheaney', 'Calf', 'assets/images/products/joseph-cheaney-oxfords/main.jpg', 1, 0, '2025-11-03 11:24:27', '2025-11-03 11:25:33');
 
 INSERT INTO `product_variations` (`id`, `product_id`, `colour`, `is_active`, `created_at`) VALUES
 (2, 2, 'Cream', 1, '2025-11-02 06:48:13'),
-(3, 3, 'Grey', 1, '2025-11-02 07:15:20');
+(3, 3, 'Grey', 1, '2025-11-02 07:15:20'),
+(4, 4, 'White', 1, '2025-11-03 11:14:51'),
+(5, 4, 'Navy', 1, '2025-11-03 11:14:51'),
+(6, 6, 'Black', 1, '2025-11-03 11:24:27'),
+(7, 6, 'Brown', 1, '2025-11-03 11:24:27'),
+(8, 7, 'Sand', 1, '2025-11-03 11:29:40'),
+(9, 7, 'Basket Weave Brown', 1, '2025-11-03 11:29:40'),
+(10, 7, 'Basket Weave White', 1, '2025-11-03 11:29:40'),
+(11, 8, 'Beige', 1, '2025-11-03 11:35:51'),
+(12, 8, 'Navy', 1, '2025-11-03 11:35:51');
 
 INSERT INTO `variation_images` (`id`, `variation_id`, `image_filename`, `sort_order`, `created_at`) VALUES
 (1, 2, 'assets/images/products/stirlings-blazer/2/img_69068e2ded3ef4.94023519.jpg', 0, '2025-11-02 06:48:13'),
-(2, 3, 'assets/images/products/miznons-checkered-blazer/3/img_69069488a42bd0.50304460.jpg', 0, '2025-11-02 07:15:20');
+(2, 3, 'assets/images/products/miznons-checkered-blazer/3/img_69069488a42bd0.50304460.jpg', 0, '2025-11-02 07:15:20'),
+(3, 4, 'assets/images/products/kamakura-shirt/4/img_69081e2b073621.82521524.jpg', 0, '2025-11-03 11:14:51'),
+(4, 4, 'assets/images/products/kamakura-shirt/4/img_69081e2b086304.48033206.jpg', 0, '2025-11-03 11:14:51'),
+(5, 4, 'assets/images/products/kamakura-shirt/4/img_69081e2b08c875.64247383.jpg', 0, '2025-11-03 11:14:51'),
+(6, 5, 'assets/images/products/kamakura-shirt/5/img_69081e2b09fab4.54652313.jpg', 0, '2025-11-03 11:14:51'),
+(7, 6, 'assets/images/products/joseph-cheaney-oxfords/6/img_6908206bf100f3.82273216.jpg', 0, '2025-11-03 11:24:27'),
+(8, 6, 'assets/images/products/joseph-cheaney-oxfords/6/img_6908206bf122b5.91784356.jpg', 0, '2025-11-03 11:24:27'),
+(9, 6, 'assets/images/products/joseph-cheaney-oxfords/6/img_6908206bf146a6.56424877.jpg', 0, '2025-11-03 11:24:27'),
+(10, 6, 'assets/images/products/joseph-cheaney-oxfords/6/img_6908206bf163b3.01208576.jpg', 0, '2025-11-03 11:24:27'),
+(11, 6, 'assets/images/products/joseph-cheaney-oxfords/6/img_6908206bf17908.49413410.jpg', 0, '2025-11-03 11:24:27'),
+(12, 7, 'assets/images/products/joseph-cheaney-oxfords/7/img_6908206bf19f37.94130483.jpg', 0, '2025-11-03 11:24:27'),
+(13, 7, 'assets/images/products/joseph-cheaney-oxfords/7/img_6908206bf1b662.83405192.jpg', 0, '2025-11-03 11:24:27'),
+(14, 7, 'assets/images/products/joseph-cheaney-oxfords/7/img_6908206bf1d466.51964347.jpg', 0, '2025-11-03 11:24:27'),
+(15, 7, 'assets/images/products/joseph-cheaney-oxfords/7/img_6908206bf1ebc1.77565902.jpg', 0, '2025-11-03 11:24:27'),
+(16, 7, 'assets/images/products/joseph-cheaney-oxfords/7/img_6908206bf20197.04757939.jpg', 0, '2025-11-03 11:24:27'),
+(17, 8, 'assets/images/products/haru-loafers/8/img_690821a42bb7e0.40630042.jpg', 0, '2025-11-03 11:29:40'),
+(18, 8, 'assets/images/products/haru-loafers/8/img_690821a42bff54.37251952.jpg', 0, '2025-11-03 11:29:40'),
+(19, 8, 'assets/images/products/haru-loafers/8/img_690821a42c3d66.73598202.jpg', 0, '2025-11-03 11:29:40'),
+(20, 8, 'assets/images/products/haru-loafers/8/img_690821a42c7637.47056749.jpg', 0, '2025-11-03 11:29:40'),
+(21, 8, 'assets/images/products/haru-loafers/8/img_690821a42cd462.98173482.jpg', 0, '2025-11-03 11:29:40'),
+(22, 9, 'assets/images/products/haru-loafers/9/img_690821a42d9866.00082481.jpg', 0, '2025-11-03 11:29:40'),
+(23, 10, 'assets/images/products/haru-loafers/10/img_690821a42df655.95921641.jpg', 0, '2025-11-03 11:29:40'),
+(24, 11, 'assets/images/products/echizenya-cotton-pants/11/img_69082317dbbcd1.76995365.jpg', 0, '2025-11-03 11:35:51'),
+(25, 12, 'assets/images/products/echizenya-cotton-pants/12/img_69082317dcea52.17521766.jpg', 0, '2025-11-03 11:35:51');
 
 INSERT INTO `variation_sizes` (`id`, `variation_id`, `size`, `stock_quantity`, `created_at`) VALUES
 (3, 2, '46', 2, '2025-11-02 06:48:13'),
 (4, 2, '48', 3, '2025-11-02 06:48:13'),
 (5, 3, '44', 5, '2025-11-02 07:15:20'),
-(6, 3, '46', 2, '2025-11-02 07:15:20');
+(6, 3, '46', 2, '2025-11-02 07:15:20'),
+(7, 4, 'S', 1, '2025-11-03 11:14:51'),
+(8, 4, 'M', 2, '2025-11-03 11:14:51'),
+(9, 4, 'L', 3, '2025-11-03 11:14:51'),
+(10, 5, 'S', 3, '2025-11-03 11:14:51'),
+(11, 5, 'M', 3, '2025-11-03 11:14:51'),
+(12, 5, 'L', 3, '2025-11-03 11:14:51'),
+(13, 6, 'US 8', 1, '2025-11-03 11:24:27'),
+(14, 6, 'US 9', 2, '2025-11-03 11:24:27'),
+(15, 6, 'US 10', 3, '2025-11-03 11:24:27'),
+(16, 7, '10', 5, '2025-11-03 11:24:27'),
+(17, 8, 'US 9', 2, '2025-11-03 11:29:40'),
+(18, 9, 'US 8', 2, '2025-11-03 11:29:40'),
+(19, 10, 'US 8', 1, '2025-11-03 11:29:40'),
+(20, 11, '32', 1, '2025-11-03 11:35:51'),
+(21, 12, '32', 3, '2025-11-03 11:35:51');
 
 CREATE TABLE returns (
   id INT AUTO_INCREMENT PRIMARY KEY,
