@@ -131,6 +131,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
         }
       }
     }
+
+    // Add new variations (colour, sizes, images)
+    if (!empty($_POST['new_variations']) && is_array($_POST['new_variations'])) {
+      foreach ($_POST['new_variations'] as $idx => $nv) {
+        $colour = isset($nv['colour']) ? trim($nv['colour']) : '';
+        if ($colour === '') { continue; }
+        if (strlen($colour) > 50) { $colour = substr($colour, 0, 50); }
+        $active = isset($nv['is_active']) ? 1 : 0;
+        $iv = $conn->prepare('INSERT INTO product_variations (product_id, colour, is_active) VALUES (?, ?, ?)');
+        $iv->bind_param('isi', $productId, $colour, $active);
+        if ($iv->execute()) {
+          $newVarId = $iv->insert_id;
+          $iv->close();
+          // Sizes
+          if (!empty($nv['sizes']) && is_array($nv['sizes'])) {
+            foreach ($nv['sizes'] as $srow) {
+              $size = isset($srow['size']) ? trim($srow['size']) : '';
+              if ($size === '') { continue; }
+              if (strlen($size) > 32) { $size = substr($size, 0, 32); }
+              $stock = isset($srow['stock']) ? (int)$srow['stock'] : 0;
+              $is = $conn->prepare('INSERT INTO variation_sizes (variation_id, size, stock_quantity) VALUES (?, ?, ?)');
+              $is->bind_param('isi', $newVarId, $size, $stock);
+              $is->execute();
+              $is->close();
+            }
+          }
+          // Images upload new_var_images_<idx>
+          $baseDir = __DIR__ . '/assets/images/products/' . $productRow['slug'] . '/' . $newVarId;
+          if (!is_dir($baseDir)) { @mkdir($baseDir, 0775, true) || @mkdir($baseDir, 0777, true); }
+          $field = 'new_var_images_' . $idx;
+          if (isset($_FILES[$field]) && is_array($_FILES[$field]['tmp_name'])) {
+            $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+            $count = count($_FILES[$field]['tmp_name']);
+            for ($i = 0; $i < $count; $i++) {
+              if (!is_uploaded_file($_FILES[$field]['tmp_name'][$i])) { continue; }
+              $mime = function_exists('mime_content_type') ? @mime_content_type($_FILES[$field]['tmp_name'][$i]) : 'image/jpeg';
+              if (!isset($allowed[$mime])) { continue; }
+              $ext = $allowed[$mime];
+              $name = uniqid('img_', true) . '.' . $ext;
+              $dest = $baseDir . '/' . $name;
+              if (@move_uploaded_file($_FILES[$field]['tmp_name'][$i], $dest)) {
+                $rel = 'assets/images/products/' . $productRow['slug'] . '/' . $newVarId . '/' . $name;
+                $ins = $conn->prepare('INSERT INTO variation_images (variation_id, image_filename, sort_order) VALUES (?, ?, 0)');
+                $ins->bind_param('is', $newVarId, $rel);
+                $ins->execute();
+                $ins->close();
+              }
+            }
+          }
+        } else {
+          $iv->close();
+        }
+      }
+    }
+
     $_SESSION['product_edit_success'] = 'Variation changes saved.';
   }
 }
@@ -363,6 +418,29 @@ foreach (($initialImages ?: []) as $ti => $img): ?>
             </div>
           </section>
           <?php endforeach; ?>
+          <section style="border:1px solid #eee; border-radius:.5rem; padding:1rem;">
+            <h3 style="margin:0 0 .5rem; font-size:1rem;">Add New Variation</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Colour</label>
+                <input type="text" name="new_variations[0][colour]" placeholder="e.g. Navy">
+              </div>
+              <div class="form-group" style="display:flex; align-items:flex-end;">
+                <label style="display:flex; align-items:center; gap:.5rem;"><input type="checkbox" name="new_variations[0][is_active]" checked> Active</label>
+              </div>
+            </div>
+            <div>
+              <h4 style="margin:.25rem 0; font-size:1rem;"><em>Sizes</em></h4>
+              <div class="form-row">
+                <input type="text" name="new_variations[0][sizes][0][size]" placeholder="Size" style="width:140px;">
+                <input type="number" name="new_variations[0][sizes][0][stock]" placeholder="Stock" min="0" style="width:120px;">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:.5rem;">
+              <label>Images</label>
+              <input type="file" name="new_var_images_0[]" accept="image/*" multiple>
+            </div>
+          </section>
           <div>
             <button type="submit" class="btn btn--primary">Save Variation Changes</button>
           </div>
