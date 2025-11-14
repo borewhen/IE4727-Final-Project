@@ -183,7 +183,7 @@ require __DIR__ . '/partials/header.php';
           </div>
           
           <div class="summary-row">
-            <span>Tax (8%)</span>
+            <span>Tax (9%)</span>
             <span>$<?php echo number_format($tax_amount, 2); ?></span>
           </div>
           
