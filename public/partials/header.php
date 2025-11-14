@@ -18,7 +18,7 @@ require_once __DIR__ . '/../config.php';
         <nav id="primary-nav" class="nav__menu" role="navigation">
           <ul class="nav__list">
             <li><a href="products.php">Shop</a></li>
-            <li><a href="about.php">About</a></li>
+            <!-- <li><a href="about.php">About</a></li> -->
             <!-- <li><a href="about.php#contact">Contact</a></li> -->
             <li><a href="cart.php" class="nav__cart" aria-label="View cart">Cart</a></li>
             <br>
