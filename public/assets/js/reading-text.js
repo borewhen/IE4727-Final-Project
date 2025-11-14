@@ -1,4 +1,4 @@
-// Dirty Manners-like per-character karaoke scroll
+// per-character karaoke scroll
 (function(){
   class SplitLines extends HTMLElement {
     constructor(){ super();
